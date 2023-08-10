@@ -1,0 +1,151 @@
+body {
+	background-color: #212529;
+	color: white;
+}
+
+body:has(#readerModal) {
+	overflow: hidden;
+	padding-right: 17px;
+}
+
+
+.manga-card{
+	display: flex;
+    justify-content: center;
+	align-items: center;
+    overflow: hidden;
+	height: 300px;
+	width: 200px;
+}
+
+.manga-card img {
+	height: 300px;
+	width: 200px;
+}
+
+
+
+
+@media (max-width: 1400px) {
+	.manga-card {
+		height: 350px;
+		width: 250px;
+	}
+	.manga-card img {
+		height: 350px;
+		width: 250px;
+	}
+}
+
+@media (max-width: 1279px) {
+	.manga-card {
+		height: 345px;
+		width: 240px;
+	}
+	.manga-card img {
+		height: 345px;
+		width: 240px;
+	}
+}
+
+@media (max-width: 1199px) {
+	.manga-card {
+		height: 400px;
+		width: 265px;
+	}
+	.manga-card img {
+		height: 400px;
+		width: 265px;
+	}
+}
+@media (max-width: 1023px) {
+	.manga-card {
+		height: 375px;
+		width: 240px;
+	}
+	.manga-card img {
+		height: 375px;
+		width: 240px;
+	}
+}
+@media (max-width: 768px) {
+	.manga-card {
+		height: 400px;
+		width: 265px;
+	}
+	.manga-card img {
+		height: 400px;
+		width: 265px;
+	}
+}
+
+
+.modal-backdrop {
+	background-color: #000000;
+	opacity: 0.8;
+	z-index: -1;
+}
+
+
+.readerModalButton:hover {
+	cursor: pointer;
+}
+
+.manga-card .manga-details {
+	position: absolute;
+	bottom: 0;
+	width: 100%;
+	height: 100%;
+	background-image: linear-gradient(to top, rgba(0, 0, 0), rgba(0, 0, 0, 0));
+}
+
+.manga-title {
+	position: absolute;
+	bottom: 5px;
+	word-wrap: break-word;
+	color: white;
+	font-weight: 500;
+	/* center text */
+	text-align: center;
+	width: 100%;
+}
+/* ease inf from top */
+@keyframes fadeInEaseIn {
+	from {
+		opacity: 0;
+		transform: translateY(-50%);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+/* ease inf from top */
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+
+/* append animation */
+.fadeInEaseIn {
+	transform-origin: 50% 0;
+	animation: fadeInEaseIn .1s linear;
+}
+
+.fadeIn {
+	transform-origin: 50% 0;
+	animation: fadeIn .1s linear;
+}
+
+
+
+.modal-header .btn-top-close {
+    padding: calc(var(--bs-modal-header-padding-y) * .5) calc(var(--bs-modal-header-padding-x) * .5);
+    margin: calc(-.5 * var(--bs-modal-header-padding-y)) calc(-.5 * var(--bs-modal-header-padding-x)) calc(-.5 * var(--bs-modal-header-padding-y)) auto;
+}

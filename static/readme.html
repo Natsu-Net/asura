@@ -1,0 +1,39 @@
+<html>
+	<style>
+	body {
+		background-color: #1a1a1a;
+		color: #fff;
+	}
+	a {
+		color: coral;
+		text-decoration: none;
+	}
+	</style>
+	<body>
+	<a href="/"><h2>Comics List<h2></a>
+	<h1>API Documentation</h1>
+	<h2>Get all the manga</h2>
+	<p>GET /api/</p>
+	<p>Parameters:</p>
+	<ul>
+		<li>page: number</li>
+		<li>limit: number</li>
+	</ul>
+	<p>Example: <a href="/api/?page=1&limit=10">/api/?page=1&limit=10</a></p>
+	<h2>Get a manga</h2>
+	<p>GET /api/:slug</p>
+	<p>Parameters:</p>
+	<ul>
+		<li>slug: string</li>
+	</ul>
+	
+	<p>Example: <a href="/api/solo-leveling">/api/solo-leveling</a></p>
+	<h2>Get pages of a chapter</h2>
+	<p>GET /api/:slug/chapter</p>
+	<p>Parameters:</p>
+	<ul>
+		<li>slug: string</li>
+		<li>chapter: string</li>
+	</ul>
+	<p>Example: <a href="/api/solo-leveling/chapter/1">/api/solo-leveling/chapter/1</a></p>
+	</body></html>
