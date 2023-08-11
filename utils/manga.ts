@@ -1,4 +1,4 @@
-import { signal } from "@preact/signals";
+import { signal, useSignal } from "@preact/signals";
 import { IS_BROWSER } from "$fresh/runtime.ts";
 
 
@@ -50,8 +50,6 @@ export const readChapterList = signal<{
 }>(JSON.parse(IS_BROWSER ? localStorage.getItem("readChapterList") ?? "{}" : "{}"));
 
 export const currentPage = signal<number>(0);
-
-export const MangaListData = signal<Manga[]>([]);
 export const PaginationData = signal<{
 	page: number;
 	pagesLeft: number;

@@ -1,6 +1,8 @@
 // "total":181,"page":0,"pagesLeft":19,"limit":10
 
 import { Signal } from "@preact/signals";
+import { ClientFetcher } from "../utils/fetcher.ts";
+import { Manga } from "../utils/manga.ts";
 
 interface PaginationData {
 	total: number;
@@ -10,7 +12,9 @@ interface PaginationData {
 	size: number;
 }
 
-export default function Pagination({ PaginationData,currentPage }: { PaginationData: Signal<PaginationData>,currentPage : Signal<number> }) {
+const PAGES_SIZE = 18;
+
+export default function Pagination({ PaginationData,currentPage,MangaListData }: { PaginationData: Signal<PaginationData>,currentPage : Signal<number>,MangaListData : Signal<Manga[]> }) {
 	const pages = [];
 	
 	// calculate the pages left
@@ -51,7 +55,7 @@ export default function Pagination({ PaginationData,currentPage }: { PaginationD
 		);
 	}
 
-	const changePage = (page: number) => {
+	const changePage = async (page: number) => {
 	
 		// change page
 		// get current url
@@ -64,10 +68,43 @@ export default function Pagination({ PaginationData,currentPage }: { PaginationD
 
 		// change page param
 		url.searchParams.set("page", page.toString());
-		window.location.href = url.toString();
+		// push new url
+		window.history.pushState({}, "", url.toString());
 
 		currentPage.value = page;
-
+		const tempPages = [];
+		// add 18 loading cards
+		for (let i = 0; i < PAGES_SIZE; i++) {
+			tempPages.push(
+				{
+					"slug": "",
+					"title": "Loading...",
+					"imgUrl": "/loading.gif",
+					"Updated_On": "",
+					"Genres": [],
+					"Author": "",
+					"Artist": "",
+					"Description": "",
+					"Status": "",
+					"Views": 0,
+					"Rating": 0,
+					"Chapters": [],
+				}
+			);
+		}
+		MangaListData.value = tempPages as unknown as Manga[];
+		const data = await ClientFetcher( "/api" + url.pathname + url.search + "&limit=" + PAGES_SIZE.toString());
+		console.log(data);
+		
+		PaginationData.value = {
+			total: data.total,
+			page: data.page,
+			pagesLeft: data.pagesLeft,
+			limit: data.limit,
+			size: PaginationData.value.size,
+		};
+		MangaListData.value = data.data;
+		
 		
 	};
 
@@ -87,7 +124,7 @@ export default function Pagination({ PaginationData,currentPage }: { PaginationD
 						} else if (page === -2) {
 							return (
 								<li class="page-item">
-									<a class="page-link" onClick={() => changePage(page)}>
+									<a class="page-link" onClick={(e) => changePage(page)}>
 										<span aria-hidden="true">&raquo;</span>
 									</a>
 								</li>

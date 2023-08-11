@@ -1,3 +1,4 @@
+import { Signal } from "@preact/signals";
 import { Manga, showMangaDetails } from "../utils/manga.ts";
 
 
@@ -22,6 +23,7 @@ function MangaDisplay(manga: Manga) {
 	);
 }
 
-export default function MangaList({ Mangas } : { Mangas: Manga[] } ) {
-	return <>{Mangas.map((manga) => MangaDisplay(manga))}</>;
+export default function MangaList({ Mangas } : { Mangas: Signal<Manga[]> } ) {
+
+	return (<>{Mangas.value.map((manga) => MangaDisplay(manga))}</>);
 }

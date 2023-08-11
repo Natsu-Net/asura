@@ -17,19 +17,55 @@ const parser = new AsuraParser();
 async function main() {
 	for await (const manga of parser.getMangaList()) {
 		// check if manga is already in the database
-		const mangaData = await dbManga.findOne({
+		const mangaData = await dbManga.find({
 			$or: [{ slug: manga.slug }, { originalSlug: manga.originalSlug }, { title: manga.title }],
-		});
+		}).toArray();
 
-		if (mangaData) {
+		if (mangaData.length > 1) {
+			// delete all duplicates if they all have the same slug
+			console.log("Found duplicates for " + mangaData[0].title);
+			console.log("Checking if they have the same slug");
+			let sameSlug = false;
+			for (let i = 0; i < mangaData.length; i++) {
+				if (mangaData[i].slug === mangaData[0].slug) {
+					sameSlug = true;
+				} else {
+					sameSlug = false;
+					break;
+				}
+			}
+
+			if (sameSlug) {
+				console.log("They have the same slug, deleting all duplicates");
+				// find the one with the most chapters and delete the rest
+				let mostChapters = mangaData[0];
+				for (let i = 0; i < mangaData.length; i++) {
+					if (mangaData[i].chapters.length > mostChapters.chapters.length) {
+						mostChapters = mangaData[i];
+						console.log("Found most chapters for " + mangaData[i].title + " with " + mangaData[i].chapters.length + " chapters" + " id: " + mangaData[i]._id);
+					}
+				}
+
+				for (let i = 0; i < mangaData.length; i++) {
+					if (mangaData[i]._id !== mostChapters._id) {
+						await dbManga.deleteOne({ _id: mangaData[i]._id });
+						console.log(`Deleted ${mangaData[i].title} because it was a duplicate, id: ${mangaData[i]._id}`);
+					}
+				}
+			}
+			console.log("Finished deleting duplicates");
+		}
+
+
+		if (mangaData[0]) {
 			// check if there's a new chapter in the manga
-			if (mangaData.chapters.length < manga.chapters.length) {
+			if (mangaData[0].chapters.length < manga.chapters.length) {
 				const chap = await manga.parseChapters();
 				
-				mangaData.chapters = chap.chapters;
-				// update the manga in the database
+				mangaData[0].chapters = chap.chapters;
+				// mangaData[0] the manga in the database
 				// update updated_on
-				mangaData.Updated_On = new Date();
+				mangaData[0].Updated_On = new Date();
 
 				// parse chapters
 
@@ -57,6 +93,8 @@ async function main() {
 		}
 		
 	}
+	
+	
 }
 
 main();

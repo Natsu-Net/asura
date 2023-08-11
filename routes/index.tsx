@@ -7,7 +7,7 @@ import ChapterReader from "../islands/ChapterRead.tsx";
 import { Handlers } from "$fresh/server.ts";
 import { ServerFetcher, ClientFetcher } from "../utils/fetcher.ts";
 import { IS_BROWSER } from "$fresh/runtime.ts";
-import { type Manga, type Chapter, MangaListData, PaginationData, currentPage } from "../utils/manga.ts";
+import { type Manga, type Chapter, PaginationData, currentPage } from "../utils/manga.ts";
 import { useState } from "preact/hooks";
 
 
@@ -58,18 +58,18 @@ export const handler: Handlers<MangaData | null> = {
 		if (!IS_BROWSER) {
 			const data = await ServerFetcher(url.toString()) as MangaData;
 
-			MangaListData.value = data.data;
 			return ctx.render(data);
 		} else {
 			const data = await ClientFetcher(url.toString());
 
-			MangaListData.value = data.data;
 			return ctx.render(data);
 		}
 	},
 };
 
 export default function Home({ data }: { data: MangaData }) {
+	const MangaListData = useSignal<Manga[]>([]);
+
 	PaginationData.value = {
 		total: data.total,
 		page: data.page,
@@ -83,6 +83,7 @@ export default function Home({ data }: { data: MangaData }) {
 
 	const lastUpdate = data.data[0].Updated_On;
 
+	MangaListData.value = data.data;
 
 	return (
 		<>
@@ -118,10 +119,10 @@ export default function Home({ data }: { data: MangaData }) {
 							<p>Last updated: {formatDate(lastUpdate)} {getCurrentTimeZoneUTC()}. from asura.gg</p>
 							<p>Totals : {data.total}</p>
 							<div class="row ">
-								<MangaList Mangas={MangaListData.value} />
+								<MangaList Mangas={MangaListData} />
 							</div>
 							<div class="col-12 mt-5">
-								<Pagination PaginationData={PaginationData} currentPage={currentPage} />
+								<Pagination PaginationData={PaginationData} currentPage={currentPage} MangaListData={MangaListData} />
 							</div>
 						</div>
 					</div>

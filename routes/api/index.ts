@@ -75,7 +75,7 @@ export const handler = async (_req: Request, _ctx: HandlerContext): Promise<Resp
 	const r = {
 		data: sdata.map((manga: Manga) => {
 			manga.chapters.map((chapter) => {
-				chapter.pages = "https://asura.aiko-sus.xyz/api/" + manga.slug + "/chapter/" + chapter.number;
+				chapter.pages = Deno.env.get("APP_URL") + "/api/" + manga.slug + "/chapter/" + chapter.number;
 				return chapter;
 			});
 			return manga;
