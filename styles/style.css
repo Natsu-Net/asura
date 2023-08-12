@@ -1,4 +1,6 @@
 @import "./styles/bootstrap.min.css";
+/* import font awesome */
+/* @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"); */
 body {
 	background-color: #212529;
 	color: white;

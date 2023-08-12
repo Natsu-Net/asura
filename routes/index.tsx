@@ -90,7 +90,7 @@ export default function Home({ data }: { data: MangaData }) {
 			<Head>
 				<title>Asura.gg | Parser</title>
 				<link href={asset("/styles/style.css")} rel="stylesheet" />
-				<link rel="stylesheet" href={asset("/styles/font-awesome.all.min.css")} />
+				<script src="https://kit.fontawesome.com/5a18604bbb.js" crossOrigin="anonymous"></script>
 			</Head>
 
 			<div data-bs-theme="dark" style="margin:0;padding:0">
