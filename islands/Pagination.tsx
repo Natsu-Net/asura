@@ -72,27 +72,11 @@ export default function Pagination({ PaginationData,currentPage,MangaListData }:
 		window.history.pushState({}, "", url.toString());
 
 		currentPage.value = page;
-		const tempPages = [];
-		// add 18 loading cards
-		for (let i = 0; i < PAGES_SIZE; i++) {
-			tempPages.push(
-				{
-					"slug": "",
-					"title": "Loading...",
-					"imgUrl": "/loading.gif",
-					"Updated_On": "",
-					"Genres": [],
-					"Author": "",
-					"Artist": "",
-					"Description": "",
-					"Status": "",
-					"Views": 0,
-					"Rating": 0,
-					"Chapters": [],
-				}
-			);
-		}
-		MangaListData.value = tempPages as unknown as Manga[];
+
+		MangaListData.value = [{
+			title: "Loading...",
+			slug: "loading",
+		}] as Manga[];
 		const data = await ClientFetcher( "/api" + url.pathname + url.search + "&limit=" + PAGES_SIZE.toString());
 		console.log(data);
 		

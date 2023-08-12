@@ -25,5 +25,16 @@ function MangaDisplay(manga: Manga) {
 
 export default function MangaList({ Mangas } : { Mangas: Signal<Manga[]> } ) {
 
+	if (Mangas.value[0].slug == "loading") {
+		return (
+			// center the spinner in the middle of the page
+			<div class="d-flex justify-content-center align-items-center" style="height: 100vh;">
+				<div class="spinner-border text-primary" style="width:100px;height:100px"role="status">
+					<span class="visually-hidden">Loading...</span>
+				</div>
+			</div>
+		);
+	}
+
 	return (<>{Mangas.value.map((manga) => MangaDisplay(manga))}</>);
 }
