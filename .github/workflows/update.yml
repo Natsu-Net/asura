@@ -1,9 +1,6 @@
 name: Crawling and Updating Database
 
 on:
-  push:
-    branches:
-      - main
   schedule:
     - cron: '*/5 * * * *'
 permissions:
