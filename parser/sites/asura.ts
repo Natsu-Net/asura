@@ -1,7 +1,7 @@
 import { Chapter, Manga } from "../../utils/manga.ts";
 import { DOMParser, HTMLDocument } from "https://deno.land/x/deno_dom@v0.1.38/deno-dom-wasm.ts";
 
-const BASE_URL = "https://asura.gg";
+const BASE_URL = "https://asura.nacm.xyz";
 
 export default class AsuraParser {
 	private result: Manga[] = [];

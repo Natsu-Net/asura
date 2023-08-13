@@ -93,6 +93,44 @@ async function main() {
 		}
 		
 	}
+
+	console.log("Finished updating database");
+
+	// updating all url domains from asura.gg to asura.nacm.xyz/
+	// const mangaList = await dbManga.find().toArray();
+	// for (let i = 0; i < mangaList.length; i++) {
+	// 	const manga = mangaList[i];
+	// 	if (manga.url.includes("asura.gg") || manga.imgUrl.includes("asura.gg")) {
+	// 		manga.url = manga.url.replace("asura.gg", "asura.nacm.xyz");
+	// 		manga.imgUrl = manga.imgUrl.replace("asura.gg", "asura.nacm.xyz");
+	// 		// images
+	// 		for (let j = 0; j < manga.chapters.length; j++) {
+	// 			const chapter = manga.chapters[j];
+	// 			chapter.url = chapter.url.replace("asura.gg", "asura.nacm.xyz");
+	// 			for (let k = 0; k < chapter.pages.length; k++) {
+	// 				const page = chapter.pages[k];
+	// 				chapter.pages[k] = page.replace("asura.gg", "asura.nacm.xyz");
+	// 			}
+	// 		}
+
+
+	// 		await dbManga.updateOne(
+	// 			{
+	// 				_id: manga._id,
+	// 			},
+	// 			{
+	// 				$set: {
+	// 					url: manga.url,
+	// 					imgUrl: manga.imgUrl,
+	// 					chapters: manga.chapters
+	// 				}
+	// 			},
+	// 		);
+
+	// 		console.log(`Updated ${manga.title}`);
+			
+	// 	}
+	// }
 	
 	
 }
