@@ -140,6 +140,8 @@ async function main() {
 					},
 				);
 				console.log(`Updated ${manga.title}`);
+			} else {
+				console.log(`No new chapters for ${manga.title}`);
 			}
 
 		} else {
