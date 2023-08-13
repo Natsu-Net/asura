@@ -117,7 +117,7 @@ export default function Home({ data }: { data: MangaData }) {
 							</h1>
 							<p>Last updated: {formatDate(lastUpdate)} {getCurrentTimeZoneUTC()}. from asura.gg</p>
 							<p>Totals : {data.total}</p>
-							<div class="row ">
+							<div class="row" style="min-height:70vh">
 								<MangaList Mangas={MangaListData} />
 							</div>
 							<div class="col-12 mt-5">
