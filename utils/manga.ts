@@ -1,9 +1,10 @@
-import { signal, useSignal } from "@preact/signals";
+import { signal } from "@preact/signals";
 import { IS_BROWSER } from "$fresh/runtime.ts";
 
 
 
 interface Manga {
+	[x: string]: any;
 	Artist: string;
 	title: string;
 	slug: string;

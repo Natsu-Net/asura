@@ -3,7 +3,7 @@ import { HandlerContext } from "$fresh/server.ts";
 // Jokes courtesy of https://punsandoneliners.com/randomness/programmer-jokes/
 
 import { MongoClient } from "https://deno.land/x/mongo@v0.31.2/mod.ts";
-import { Chapter, Manga } from "../../utils/manga.ts";
+import { Manga } from "../../utils/manga.ts";
 
 const client = new MongoClient();
 
@@ -13,9 +13,7 @@ const db = client.database("asura");
 
 const dbManga = db.collection("manga");
 
-const dbChapters = db.collection("chapters");
 export const handler = async (_req: Request, _ctx: HandlerContext): Promise<Response> => {
-	const mangaList = (await dbManga.find({}).toArray()) as Manga[];
 
 	const searchParams = new URL(_req.url).searchParams;
 
@@ -37,6 +35,7 @@ export const handler = async (_req: Request, _ctx: HandlerContext): Promise<Resp
 
 	const start = page - 1 < 0 ? 0 : page == 1 ? 0 : (page - 1) * limit;
 
+	// deno-lint-ignore no-explicit-any
 	const Query: any = {};
 
 	if (search) {
@@ -64,7 +63,7 @@ export const handler = async (_req: Request, _ctx: HandlerContext): Promise<Resp
 
 	const count = await dbManga.countDocuments(Query);
 
-	let sdata = (await dbManga
+	const sdata = (await dbManga
 		.find(Query)
 		.sort({
 			Updated_On: -1,

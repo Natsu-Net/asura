@@ -2,7 +2,6 @@ import { HandlerContext } from "$fresh/server.ts";
 
 // Jokes courtesy of https://punsandoneliners.com/randomness/programmer-jokes/
 import { MongoClient } from "https://deno.land/x/mongo@v0.31.2/mod.ts";
-import { Manga } from "../../../../utils/manga.ts";
 
 const client = new MongoClient();
 
@@ -33,9 +32,9 @@ export const handler = async (_req: Request, _ctx: HandlerContext): Promise<Resp
 		}
 
 		// check if theres a chapter 0 
-		const c = chapters.find((c: { number: any; }) => Number(c.number) == chapter);
+		const c = chapters.find((c: { number: number; }) => Number(c.number) == chapter);
 		const C_chapter = await dbChapters.findOne({
-			mangaId: (manga as any)._id,
+			mangaId: manga._id,
 			_id: c._id
 		})
 		if (chapter > chapters.length || chapter < 0 || !c || !C_chapter) {

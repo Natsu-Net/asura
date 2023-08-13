@@ -1,4 +1,4 @@
-import type { Chapter, Manga } from "./manga.ts";
+import type { Manga } from "./manga.ts";
 interface Genre {
 	name: string;
 	url: string;
@@ -24,7 +24,6 @@ export async function ServerFetcher(url: string) {
 
 	const dbManga = db.collection("manga");
 
-	const dbChapters = db.collection("chapters");
 
 	const searchParams = new URL(url).searchParams;
 

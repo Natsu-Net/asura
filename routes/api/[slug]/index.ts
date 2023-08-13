@@ -35,7 +35,7 @@ export const handler = async (_req: Request, _ctx: HandlerContext): Promise<Resp
 
 	if (manga) {
 		const chapters = await dbChapters.find({
-			mangaId: (manga as any)._id 
+			mangaId: manga._id 
 		}).toArray();
 		return new Response(JSON.stringify({
 			...manga,

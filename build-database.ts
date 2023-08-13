@@ -2,7 +2,7 @@ import "https://deno.land/x/dotenv@v3.2.2/load.ts";
 import AsuraParser from "./parser/sites/asura.ts";
 
 import { MongoClient } from "https://deno.land/x/mongo@v0.31.2/mod.ts";
-import { Manga } from "./utils/manga.ts";
+import { Chapter, Manga } from "./utils/manga.ts";
 const client = new MongoClient();
 
 await client.connect(Deno.env.get("MONGO_URI") ?? "");
@@ -100,7 +100,7 @@ async function main() {
 				})
 				
 				if (newChapters.length > 0) {
-					const list = await dbChapters.insertMany(newChapters.map((chapter:any) => {
+					const list = await dbChapters.insertMany(newChapters.map((chapter : Chapter) => {
 						return {
 							mangaId: mangaData[0]._id,
 							images: chapter.pages,
@@ -115,7 +115,7 @@ async function main() {
 
 					// delete old chapters
 					delete mangaData[0].chapters;
-					mangaData[0].chapters = list.insertedIds.map((id: any) => {
+					mangaData[0].chapters = list.insertedIds.map((id) => {
 						return {
 							_id: id,
 						}
@@ -156,7 +156,7 @@ async function main() {
 			})
 			const chapt: Array<{number : number}> = []
 
-			const list = await dbChapters.insertMany(chap.chapters.map((chapter:any) => {
+			const list = await dbChapters.insertMany(chap.chapters.map((chapter:Chapter) => {
 				const c_chapter = {
 					number: parseInt(chapter.title.split(" ")[1])
 				}
@@ -179,7 +179,8 @@ async function main() {
 					number : chapter.number,
 					_id: list.insertedIds[chapter.number - 1],
 				}
-			}) as any;
+			// deno-lint-ignore no-explicit-any
+			}) as any
 
 			// insert manga into database
 			

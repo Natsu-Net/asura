@@ -1,5 +1,5 @@
 import { Head,asset } from "$fresh/runtime.ts";
-import { signal, useSignal } from "@preact/signals";
+import { useSignal } from "@preact/signals";
 import MangaList from "../islands/MangaList.tsx";
 import Pagination from "../islands/Pagination.tsx";
 import MangaDetails from "../islands/MangaDetails.tsx";
@@ -8,7 +8,6 @@ import { Handlers } from "$fresh/server.ts";
 import { ServerFetcher, ClientFetcher } from "../utils/fetcher.ts";
 import { IS_BROWSER } from "$fresh/runtime.ts";
 import { type Manga, type Chapter, PaginationData, currentPage } from "../utils/manga.ts";
-import { useState } from "preact/hooks";
 
 
 const formatDate = (sdate: string) => {
@@ -18,7 +17,7 @@ const formatDate = (sdate: string) => {
 	const day = date.getDate() < 10 ? `0${date.getDate()}` : date.getDate();
 	const month = date.getMonth() + 1 < 10 ? `0${date.getMonth() + 1}` : date.getMonth() + 1;
 	const year = date.getFullYear();
-	return `${hours}:${minutes} - ${day}/${month}/${year}`;;
+	return `${hours}:${minutes} - ${day}/${month}/${year}`
 	
 }
 const getCurrentTimeZoneUTC = () => {
