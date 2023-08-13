@@ -77,16 +77,30 @@ export default function Pagination({ PaginationData,currentPage,MangaListData }:
 			title: "Loading...",
 			slug: "loading",
 		}] as Manga[];
+
+		// update the pagination data
+
+		let newPageLeft = PaginationData.value.pagesLeft;
+
+		if (page > PaginationData.value.page) {
+			newPageLeft = PaginationData.value.pagesLeft - (page - PaginationData.value.page);
+		} else if (page < PaginationData.value.page) {
+			newPageLeft = PaginationData.value.pagesLeft + (PaginationData.value.page - page);
+		}
+
+		PaginationData.value ={
+			total: PaginationData.value.total,
+			page: page,
+			pagesLeft: newPageLeft,
+			limit: PaginationData.value.limit,
+			size: PaginationData.value.size,
+
+		}
+
+
 		const data = await ClientFetcher( "/api" + url.pathname + url.search + "&limit=" + PAGES_SIZE.toString());
 		console.log(data);
 		
-		PaginationData.value = {
-			total: data.total,
-			page: data.page,
-			pagesLeft: data.pagesLeft,
-			limit: data.limit,
-			size: PaginationData.value.size,
-		};
 		MangaListData.value = data.data;
 		
 		
