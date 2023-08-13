@@ -3,8 +3,12 @@ import { Manga, showMangaDetails } from "../utils/manga.ts";
 
 
 function MangaDisplay(manga: Manga) {
-	function openModal() {
-		showMangaDetails.value = manga;
+	async function openModal() {
+		// fetch manga details
+
+		const mangaDetails = await fetch(`/api/${manga.slug}`).then((res) => res.json()) as Manga;
+
+		showMangaDetails.value = mangaDetails;
 	}
 
 	

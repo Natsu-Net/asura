@@ -73,14 +73,6 @@ export const handler = async (_req: Request, _ctx: HandlerContext): Promise<Resp
 		.limit(limit)
 		.toArray()) as Manga[];
 
-	for (let i = 0; i < sdata.length; i++) {
-		const manga = sdata[i];
-		const chapters = await dbChapters.find({
-			mangaId: (manga as any)._id,
-		}).toArray();
-		sdata[i].chapters = chapters as Chapter[];
-	}
-
 
 	const r = {
 		data: sdata,

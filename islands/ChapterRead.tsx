@@ -24,7 +24,7 @@ export default function ChapterReader() {
 		scrollEnd: number;
 	}[] = [];
 
-	const handleScroll = async (e: Event) => {
+	const handleScroll = (e: Event) => {
 		const { scrollHeight, scrollTop, clientHeight } = e.target as HTMLDivElement;
 		const target = e.target as HTMLDivElement;
 
@@ -92,7 +92,7 @@ export default function ChapterReader() {
 			// add the chapter to the chapterScroll if it doesnt exist yet
 
 			// fetch next chapter
-			const rs = (await fetch((next_chapter.pages as string) ?? "").then((e) => e.json())).images as string[];
+			const rs = next_chapter.images as unknown as string[];
 			const se = rs.map((e, i) => {
 				return `<img src="${e}" class="img-fluid autohide" width="100%" alt="${i.toString()}" />`;
 			});
@@ -141,10 +141,10 @@ export default function ChapterReader() {
 
 	useEffect(() => {
 		if (chapter == null) return;
-		(async () => {
+		(() => {
 			// check if theres a pages 0 in the chapter
-			const rs = (await fetch((chapter?.pages as string) ?? "").then((e) => e.json())).images as string[];
-			console.log(rs);
+
+			const rs = chapter.images as unknown as string[];
 			const se = rs.map((e, i) => {
 				return <img src={e} class="img-fluid autohide" width="100%" alt={i.toString()} />;
 			});
