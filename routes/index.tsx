@@ -90,13 +90,18 @@ export default function Home({ data }: { data: MangaData }) {
 				<title>Asura.gg | Parser</title>
 				<link href={asset("/styles/style.css")} rel="stylesheet" />
 				<script src="https://kit.fontawesome.com/5a18604bbb.js" crossOrigin="anonymous"></script>
+				{/* icon is logo.webp */}
+				<link rel="icon" href={asset("/logo.webp")} />
 			</Head>
 
 			<div data-bs-theme="dark" style="margin:0;padding:0">
 				<nav class="navbar bg-body-tertiary">
 					<div class="container-md">
+						{/* center text */}
 						<a class="navbar-brand" href="/">
-							Asura Parser
+							{/* icon is logo.webp */}
+							<img src={asset("/logo.webp")} alt="Asura Parser" width="42" height="42" class="d-inline-block mr-5" />
+							Not Asura
 						</a>
 						<form class="flex" role="search" method="get">
 							<input class="form-control me-2" name="search" type="search" placeholder="Search" aria-label="Search" />
