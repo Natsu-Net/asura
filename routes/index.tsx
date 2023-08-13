@@ -117,10 +117,10 @@ export default function Home({ data }: { data: MangaData }) {
 							</h1>
 							<p>Last updated: {formatDate(lastUpdate)} {getCurrentTimeZoneUTC()}. from asura.gg</p>
 							<p>Totals : {data.total}</p>
-							<div class="row" style="min-height:70vh">
+							<div class="row">
 								<MangaList Mangas={MangaListData} />
 							</div>
-							<div class="col-12 mt-5">
+							<div class="col-12 mt-5 fixed-bottom mb-20">
 								<Pagination PaginationData={PaginationData} currentPage={currentPage} MangaListData={MangaListData} />
 							</div>
 						</div>
