@@ -6,6 +6,8 @@ const BASE_URL = "https://asura.nacm.xyz";
 export default class AsuraParser {
 	private result: Manga[] = [];
 
+	public domain = BASE_URL;
+
 	public getSlugFromUrl(url: string) {
 		const split = url.split("/").filter((s) => s !== "");
 		const slug = split[split.length - 1].replace(/^[0-9]+-/, "").replace(/-+$/, "");
@@ -28,7 +30,7 @@ export default class AsuraParser {
 		const mangaLists: Manga[] = [];
 
 		while (hasNextPage) {
-			const response = await fetch(`${BASE_URL}/manga/?page=${curentPage}&order=update`);
+			const response = await fetch(`${this.domain}/manga/?page=${curentPage}&order=update`);
 			const html = await response.text();
 			const parser = new DOMParser().parseFromString(html, "text/html") as HTMLDocument;
 			const content = parser.getElementById("content");

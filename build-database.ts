@@ -2,6 +2,7 @@ import "https://deno.land/x/dotenv@v3.2.2/load.ts";
 import AsuraParser from "./parser/sites/asura.ts";
 
 import { MongoClient } from "https://deno.land/x/mongo@v0.31.2/mod.ts";
+import { Manga } from "./utils/manga.ts";
 const client = new MongoClient();
 
 await client.connect(Deno.env.get("MONGO_URI") ?? "");
@@ -11,12 +12,12 @@ const db = client.database("asura");
 const dbManga = db.collection("manga");
 
 interface dbChapters {
-		_id : "string",
-		mangaId : "string",
+		_id : string,
+		mangaId : string,
 		images : Array<string>,
-		title : "string",
-		url : "string",
-		date : "string",
+		title : string,
+		url : string,
+		date : string,
 
 }
 
@@ -27,6 +28,8 @@ const dbChapters = db.collection("chapters");
 const parser = new AsuraParser();
 
 async function main() {
+	console.log(parser.domain);
+
 	for await (const manga of parser.getMangaList()) {
 		// check if manga is already in the database
 		const mangaData = await dbManga.find({
@@ -139,7 +142,7 @@ async function main() {
 						}
 					},
 				);
-				console.log(`Updated ${manga.title}`);
+				console.log(`Updated ${manga.title} with ${newChapters.length} new chapters`);
 			} else {
 				console.log(`No new chapters for ${manga.title}`);
 			}
@@ -195,43 +198,90 @@ async function main() {
 
 	console.log("Finished updating database");
 
-	// updating all url domains from asura.gg to asura.nacm.xyz/
-	// const mangaList = await dbManga.find().toArray();
-	// for (let i = 0; i < mangaList.length; i++) {
-	// 	const manga = mangaList[i];
-	// 	if (manga.url.includes("asura.gg") || manga.imgUrl.includes("asura.gg")) {
-	// 		manga.url = manga.url.replace("asura.gg", "asura.nacm.xyz");
-	// 		manga.imgUrl = manga.imgUrl.replace("asura.gg", "asura.nacm.xyz");
-	// 		// images
-	// 		for (let j = 0; j < manga.chapters.length; j++) {
-	// 			const chapter = manga.chapters[j];
-	// 			chapter.url = chapter.url.replace("asura.gg", "asura.nacm.xyz");
-	// 			for (let k = 0; k < chapter.pages.length; k++) {
-	// 				const page = chapter.pages[k];
-	// 				chapter.pages[k] = page.replace("asura.gg", "asura.nacm.xyz");
-	// 			}
-	// 		}
-
-
-	// 		await dbManga.updateOne(
-	// 			{
-	// 				_id: manga._id,
-	// 			},
-	// 			{
-	// 				$set: {
-	// 					url: manga.url,
-	// 					imgUrl: manga.imgUrl,
-	// 					chapters: manga.chapters
-	// 				}
-	// 			},
-	// 		);
-
-	// 		console.log(`Updated ${manga.title}`);
-			
-	// 	}
-	// }
-	
 	
 }
 
+async function checkforNewDomains(){
+	const config = db.collection("config");
+
+	const domain = await config.findOne({
+		name: "domain"
+	});
+
+	if (domain) {
+		parser.domain = domain.value;
+	}
+
+	const oldDomain = new URL(parser.domain);
+	// fetch old domain and check if it's still up do not follow redirects
+	const response = await fetch(oldDomain, {
+		method: "GET",
+		redirect: "manual"
+	})
+
+	// if still up then do nothing
+	if (response.status === 200) {
+		console.log("Domain still up");
+		return;
+	}
+
+	// if not up then fetch new domain from the redirect
+	const newDomain = new URL(response.headers.get("location") ?? "");
+	console.log("Domain down, fetching new domain from redirect: " + newDomain.href);
+	parser.domain = newDomain.href;
+
+	
+	// update database
+	await config.updateOne({
+		name: "domain"
+	}, {
+		$set: {
+			value: newDomain.href
+		}
+	});
+	console.log("Updated domain in database" + newDomain.href);
+
+	// update all url in database
+	const mangas = await dbManga.find({}).toArray() as Manga[];
+	for (let i = 0; i < mangas.length; i++) {
+		const manga = mangas[i];
+		manga.url = manga.url.replace(oldDomain.href, newDomain.href);
+		manga.imgUrl = manga.imgUrl.replace(oldDomain.href, newDomain.href);
+		await dbManga.updateOne({
+			_id: manga._id
+		}, {
+			$set: {
+				url: manga.url
+			}
+		});
+		// log the % of chapters updated
+		console.log(`Updated url for ${manga.title} ${i}/${mangas.length} - ${(i / mangas.length * 100).toFixed(2)}%`);		
+	}
+	const chapters = await dbChapters.find({}).toArray() as dbChapters[];
+	for (let i = 0; i < chapters.length; i++) {
+		const chapter = chapters[i];
+		chapter.url = chapter.url.replace(oldDomain.href, newDomain.href) ;
+
+		// do it for all images
+		for (let i = 0; i < chapter.images.length; i++) {
+			const image = chapter.images[i];
+			chapter.images[i] = image.replace(oldDomain.href, newDomain.href);
+		}
+			
+		await dbChapters.updateOne({
+			_id: chapter._id
+		}, {
+			$set: {
+				url: chapter.url,
+				images: chapter.images
+			}
+		});
+		// log the % of chapters updated
+		console.log(`Updated url for ${chapter.title} ${i}/${chapters.length} - ${(i / chapters.length * 100).toFixed(2)}%`);
+	}
+
+
+}
+
+await checkforNewDomains();
 main();
