@@ -1,4 +1,4 @@
-import type { Manga } from "./manga.ts";
+import type { Chapter, Manga } from "./manga.ts";
 interface Genre {
 	name: string;
 	url: string;
@@ -23,6 +23,8 @@ export async function ServerFetcher(url: string) {
 	const db = client.database("asura");
 
 	const dbManga = db.collection("manga");
+
+	const dbChapters = db.collection("chapters");
 
 	const searchParams = new URL(url).searchParams;
 
@@ -66,6 +68,15 @@ export async function ServerFetcher(url: string) {
 	const sdata = (await dbManga.find(Query).sort({
 		Updated_On: -1,
 	}).skip(start).limit(limit).toArray()) as Manga[];
+
+	for (let i = 0; i < sdata.length; i++) {
+		const manga = sdata[i];
+		const chapters = await dbChapters.find({
+			mangaId: (manga as any)._id,
+		}).toArray();
+		sdata[i].chapters = chapters as Chapter[];
+	}
+
 
 
 	const r = {

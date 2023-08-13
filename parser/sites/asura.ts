@@ -172,7 +172,6 @@ export default class AsuraParser {
 		const list = parent?.getElementsByTagName("li") ?? [];
 
 		const chapters = [];
-		console.log("found chapters", list.length);
 
 		for (const chapter of list) {
 			const url = chapter.querySelector("a")?.getAttribute("href");

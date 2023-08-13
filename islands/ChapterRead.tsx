@@ -92,8 +92,7 @@ export default function ChapterReader() {
 			// add the chapter to the chapterScroll if it doesnt exist yet
 
 			// fetch next chapter
-			const rs = (await fetch((next_chapter.pages as string) ?? "").then((e) => e.json())) as string[];
-			console.log(rs);
+			const rs = (await fetch((next_chapter.pages as string) ?? "").then((e) => e.json())).images as string[];
 			const se = rs.map((e, i) => {
 				return `<img src="${e}" class="img-fluid autohide" width="100%" alt="${i.toString()}" />`;
 			});
@@ -144,8 +143,7 @@ export default function ChapterReader() {
 		if (chapter == null) return;
 		(async () => {
 			// check if theres a pages 0 in the chapter
-
-			const rs = (await fetch((chapter?.pages as string) ?? "").then((e) => e.json())) as string[];
+			const rs = (await fetch((chapter?.pages as string) ?? "").then((e) => e.json())).images as string[];
 			console.log(rs);
 			const se = rs.map((e, i) => {
 				return <img src={e} class="img-fluid autohide" width="100%" alt={i.toString()} />;

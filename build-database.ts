@@ -10,6 +10,18 @@ const db = client.database("asura");
 
 const dbManga = db.collection("manga");
 
+interface dbChapters {
+		_id : "string",
+		mangaId : "string",
+		images : Array<string>,
+		title : "string",
+		url : "string",
+		date : "string",
+
+}
+
+const dbChapters = db.collection("chapters");
+
 // print current directory
 
 const parser = new AsuraParser();
@@ -19,9 +31,11 @@ async function main() {
 		// check if manga is already in the database
 		const mangaData = await dbManga.find({
 			$or: [{ slug: manga.slug }, { originalSlug: manga.originalSlug }, { title: manga.title }],
+			// join chapters array
 		}).toArray();
 
 		if (mangaData.length > 1) {
+			
 			// delete all duplicates if they all have the same slug
 			console.log("Found duplicates for " + mangaData[0].title);
 			console.log("Checking if they have the same slug");
@@ -37,17 +51,25 @@ async function main() {
 
 			if (sameSlug) {
 				console.log("They have the same slug, deleting all duplicates");
+				const MostChapters = await dbChapters.find({
+					mangaId: mangaData[0]._id
+				}).toArray() as dbChapters[];
+
 				// find the one with the most chapters and delete the rest
 				let mostChapters = mangaData[0];
 				for (let i = 0; i < mangaData.length; i++) {
-					if (mangaData[i].chapters.length > mostChapters.chapters.length) {
-						mostChapters = mangaData[i];
+					const chapters = await dbChapters.find({
+						mangaId: mangaData[i]._id
+					}).toArray() as dbChapters[];
+
+					if (chapters.length > MostChapters.length) {
+						mostChapters = MostChapters;
 						console.log("Found most chapters for " + mangaData[i].title + " with " + mangaData[i].chapters.length + " chapters" + " id: " + mangaData[i]._id);
 					}
 				}
 
 				for (let i = 0; i < mangaData.length; i++) {
-					if (mangaData[i]._id !== mostChapters._id) {
+					if (mangaData[i]._id !== mostChapters.mangaId) {
 						await dbManga.deleteOne({ _id: mangaData[i]._id });
 						console.log(`Deleted ${mangaData[i].title} because it was a duplicate, id: ${mangaData[i]._id}`);
 					}
@@ -59,24 +81,61 @@ async function main() {
 
 		if (mangaData[0]) {
 			// check if there's a new chapter in the manga
+
 			if (mangaData[0].chapters.length < manga.chapters.length) {
 				const chap = await manga.parseChapters();
 				
-				mangaData[0].chapters = chap.chapters;
+				// get all chapters in the database
+				const Chapters = await dbChapters.find({
+					mangaId: mangaData[0]._id
+				}).toArray() as dbChapters[];
+				// check if there's a new chapter
+				const newChapters = chap.chapters.filter((chapter: { url: string; }) => {
+					return !Chapters.some((dbChapter: { url: string; }) => {
+						return dbChapter.url === chapter.url;
+					})
+				})
+				
+				if (newChapters.length > 0) {
+					const list = await dbChapters.insertMany(newChapters.map((chapter:any) => {
+						return {
+							mangaId: mangaData[0]._id,
+							images: chapter.pages,
+							title: chapter.title,
+							url: chapter.url,
+							date: chapter.date,
+							number: parseInt(chapter.title.split(" ")[1])
+						}
+					}));
+					console.log(`Inserted ${newChapters.length} new chapters for ${manga.title}`);
+					
+
+					// delete old chapters
+					delete mangaData[0].chapters;
+					mangaData[0].chapters = list.insertedIds.map((id: any) => {
+						return {
+							_id: id,
+						}
+					})
+				}
+
+
 				// mangaData[0] the manga in the database
 				// update updated_on
 				mangaData[0].Updated_On = new Date();
+
+				// delete old chapters
 
 				// parse chapters
 
 
 				await dbManga.updateOne(
 					{
-						$or: [{ slug: manga.slug }, { originalSlug: manga.originalSlug }],
+						_id: mangaData[0]._id,
 					},
 					{
 						$set: {
-							...mangaData
+							...mangaData[0]
 						}
 					},
 				);
@@ -85,11 +144,49 @@ async function main() {
 
 		} else {
 			const chap = await manga.parseChapters();
-			manga.chapters = chap.chapters;
+			manga.chapters = [];
+			// insert manga into database
+			const mangaDataID = await dbManga.insertOne({
+				...manga,
+			})
+			const chapt: Array<{number : number}> = []
+
+			const list = await dbChapters.insertMany(chap.chapters.map((chapter:any) => {
+				const c_chapter = {
+					number: parseInt(chapter.title.split(" ")[1])
+				}
+				chapt.push(c_chapter);
+
+				return {
+					mangaId: mangaDataID,
+					images: chapter.pages,
+					title: chapter.title,
+					url: chapter.url,
+					date: chapter.date,
+					number: parseInt(chapter.title.split(" ")[1])
+				}
+			}));
+			
+
+			// // delete old chapters
+			manga.chapters = chapt.map((chapter) => {
+				return {
+					number : chapter.number,
+					_id: list.insertedIds[chapter.number - 1],
+				}
+			}) as any;
+
 			// insert manga into database
 			
-			await dbManga.insertOne(manga);
+			await dbManga.updateOne({
+				_id: mangaDataID,
+			}, {
+				$set: {
+					chapters: manga.chapters
+				}
+			})
 			console.log(`Inserted ${manga.title}`);
+			console.log(`Inserted ${manga.chapters.length} new chapters for ${manga.title}`);
 		}
 		
 	}

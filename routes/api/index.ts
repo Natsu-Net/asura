@@ -3,7 +3,7 @@ import { HandlerContext } from "$fresh/server.ts";
 // Jokes courtesy of https://punsandoneliners.com/randomness/programmer-jokes/
 
 import { MongoClient } from "https://deno.land/x/mongo@v0.31.2/mod.ts";
-import { Manga } from "../../utils/manga.ts";
+import { Chapter, Manga } from "../../utils/manga.ts";
 
 const client = new MongoClient();
 
@@ -13,6 +13,7 @@ const db = client.database("asura");
 
 const dbManga = db.collection("manga");
 
+const dbChapters = db.collection("chapters");
 export const handler = async (_req: Request, _ctx: HandlerContext): Promise<Response> => {
 	const mangaList = (await dbManga.find({}).toArray()) as Manga[];
 
@@ -72,14 +73,17 @@ export const handler = async (_req: Request, _ctx: HandlerContext): Promise<Resp
 		.limit(limit)
 		.toArray()) as Manga[];
 
+	for (let i = 0; i < sdata.length; i++) {
+		const manga = sdata[i];
+		const chapters = await dbChapters.find({
+			mangaId: (manga as any)._id,
+		}).toArray();
+		sdata[i].chapters = chapters as Chapter[];
+	}
+
+
 	const r = {
-		data: sdata.map((manga: Manga) => {
-			manga.chapters.map((chapter) => {
-				chapter.pages = Deno.env.get("APP_URL") + "/api/" + manga.slug + "/chapter/" + chapter.number;
-				return chapter;
-			});
-			return manga;
-		}),
+		data: sdata,
 		total: count,
 		page: page,
 		pagesLeft: Math.ceil(count / limit) - page,

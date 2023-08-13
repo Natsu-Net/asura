@@ -34,6 +34,7 @@ interface Manga {
 }
 
 interface Chapter {
+images: string;
 	title: string;
 	url: string;
 	date: string;
