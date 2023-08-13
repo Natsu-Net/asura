@@ -100,7 +100,7 @@ export default function Home({ data }: { data: MangaData }) {
 						{/* center text */}
 						<a class="navbar-brand" href="/">
 							{/* icon is logo.webp */}
-							<img src={asset("/logo.webp")} alt="Asura Parser" width="42" height="42" class="d-inline-block mr-5" />
+							<img src={asset("/logo.webp")} alt="Asura Parser" width="48" height="48" class="d-inline-block mr-5" />
 						</a>
 						<form class="flex" role="search" method="get">
 							<input class="form-control me-2" name="search" type="search" placeholder="Search" aria-label="Search" />
