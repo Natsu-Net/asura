@@ -22,7 +22,7 @@ jobs:
         uses: fkirc/skip-duplicate-actions@v5.3.0
         with:
           concurrent_skipping: 'always'
-  update-manga_json:
+  crawling:
     needs: pre_job    
     runs-on: "self-hosted"
 
