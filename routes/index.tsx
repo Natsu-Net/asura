@@ -123,7 +123,7 @@ export default function Home({ data }: { data: MangaData }) {
 							<div class="row">
 								<MangaList Mangas={MangaListData} />
 							</div>
-							<div class="col-12 mt-5 bottom mb-20">
+							<div class="col-12 mt-5 bottom-absolute mb-20">
 								<Pagination PaginationData={PaginationData} currentPage={currentPage} MangaListData={MangaListData} />
 							</div>
 						</div>
