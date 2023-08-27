@@ -1,7 +1,7 @@
 import "https://deno.land/x/dotenv@v3.2.2/load.ts";
 import AsuraParser from "./parser/sites/asura.ts";
 
-import { MongoClient } from "https://deno.land/x/mongo@v0.31.2/mod.ts";
+import { MongoClient, ObjectId } from "https://deno.land/x/mongo@v0.31.2/mod.ts";
 import { Chapter, Manga } from "./utils/manga.ts";
 const client = new MongoClient();
 
@@ -141,11 +141,13 @@ async function main() {
 
 				// delete old chapters
 				if (oldChapters.length > 0) {
-					await dbChapters.deleteMany({
-						_id: {
-							$in: oldChapters.map((chapter) => chapter._id),
-						},
-					});
+					await dbChapters.deleteMany(
+						{
+							_id: {
+								$in: oldChapters.map((chapter) => chapter._id),
+							}
+						}
+					);
 					console.log(`Deleted ${oldChapters.length} old chapters for ${manga.title}`);
 				}
 				
@@ -170,7 +172,9 @@ async function main() {
 					delete mangaData[0].chapters;
 					mangaData[0].chapters = await dbChapters.find({
 						mangaId: mangaData[0]._id,
-						$in : list.insertedIds
+						_id: {
+							$in: list.insertedIds,
+						}
 					}).toArray().then((chapters) => {
 						return chapters.map((chapter) => {
 							return {
@@ -186,12 +190,6 @@ async function main() {
 				mangaData[0].Updated_On = new Date();
 
 				// delete old chapters
-
-				// parse chapters
-
-				if (newChapters.length > 0) {
-					break;
-				}
 
 				await dbManga.updateOne(
 					{

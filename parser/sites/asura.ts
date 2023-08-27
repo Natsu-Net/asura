@@ -225,6 +225,11 @@ export default class AsuraParser {
 
 		for (const page of pages) {
 			const url = page.getAttribute("src");
+			// check if its its parent got class asurascans.rights
+			if (page.parentElement?.classList.contains("asurascans.rights")) {
+				continue;
+			}
+
 			if (url) {
 				images.push(url);
 			}
