@@ -1,4 +1,4 @@
-import { Head,asset } from "$fresh/runtime.ts";
+import { Head, asset } from "$fresh/runtime.ts";
 import { useSignal } from "@preact/signals";
 import MangaList from "../islands/MangaList.tsx";
 import Pagination from "../islands/Pagination.tsx";
@@ -9,7 +9,6 @@ import { ServerFetcher, ClientFetcher } from "../utils/fetcher.ts";
 import { IS_BROWSER } from "$fresh/runtime.ts";
 import { type Manga, type Chapter, PaginationData, currentPage } from "../utils/manga.ts";
 
-
 const formatDate = (sdate: string) => {
 	const date = new Date(sdate);
 	const hours = date.getHours() < 10 ? `0${date.getHours()}` : date.getHours();
@@ -17,9 +16,8 @@ const formatDate = (sdate: string) => {
 	const day = date.getDate() < 10 ? `0${date.getDate()}` : date.getDate();
 	const month = date.getMonth() + 1 < 10 ? `0${date.getMonth() + 1}` : date.getMonth() + 1;
 	const year = date.getFullYear();
-	return `${hours}:${minutes} - ${day}/${month}/${year}`
-	
-}
+	return `${hours}:${minutes} - ${day}/${month}/${year}`;
+};
 const getCurrentTimeZoneUTC = () => {
 	const date = new Date();
 	const timeZone = date.getTimezoneOffset() / 60;
@@ -30,7 +28,7 @@ const getCurrentTimeZoneUTC = () => {
 	} else {
 		return `UTC+${timeZone}`;
 	}
-}
+};
 
 interface Genre {
 	name: string;
@@ -55,7 +53,7 @@ export const handler: Handlers<MangaData | null> = {
 		}
 
 		if (!IS_BROWSER) {
-			const data = await ServerFetcher(url.toString()) as MangaData;
+			const data = (await ServerFetcher(url.toString())) as MangaData;
 
 			return ctx.render(data);
 		} else {
@@ -76,7 +74,6 @@ export default function Home({ data }: { data: MangaData }) {
 		limit: data.limit,
 		size: PAGES_SIZE,
 	};
-
 
 	currentPage.value = data.page;
 
@@ -118,7 +115,9 @@ export default function Home({ data }: { data: MangaData }) {
 									API Document
 								</a>
 							</h1>
-							<p>Last updated: {formatDate(lastUpdate)} {getCurrentTimeZoneUTC()}. from asura.gg</p>
+							<p>
+								Last updated: {formatDate(lastUpdate)} {getCurrentTimeZoneUTC()}. from asura.gg
+							</p>
 							<p>Totals : {data.total}</p>
 							<div class="row">
 								<MangaList Mangas={MangaListData} />
@@ -129,11 +128,17 @@ export default function Home({ data }: { data: MangaData }) {
 						</div>
 					</div>
 				</div>
+				<footer class="bg-body-tertiary text-center text-lg-start">
+					<div class="text-center p-3 bg-body-tertiary">
+						<span class="text-white" >
+							Made with ❤️ by Aiko <br/>Powered by <a href="https://deno.com" class="text-decoration-none">🦖</a>
+						</span>
+					</div>
+				</footer>
 			</div>
 
 			<MangaDetails />
 			<ChapterReader />
-
 		</>
 	);
 }

@@ -1,7 +1,7 @@
 import { HandlerContext } from "$fresh/server.ts";
 
 // Jokes courtesy of https://punsandoneliners.com/randomness/programmer-jokes/
-import { MongoClient } from "https://deno.land/x/mongo@v0.31.2/mod.ts";
+import { MongoClient, ObjectId } from "https://deno.land/x/mongo@v0.31.2/mod.ts";
 
 const client = new MongoClient();
 
@@ -16,31 +16,42 @@ const dbChapters = db.collection("chapters");
 export const handler = async (_req: Request, _ctx: HandlerContext): Promise<Response> => {
 	const slug = _ctx.params.slug;
 	const chapter = Number(_ctx.params.chapter);
-	const mangaList = (await dbManga.find({
-		slug
-	}).toArray())
+	const mangaList = await dbManga
+		.find({
+			slug,
+		})
+		.toArray();
 	// check if manga is empty
 	if (mangaList.length === 0 || !slug) {
 		return new Response("Manga not found", { status: 404 });
 	}
-	const manga = mangaList[0]
-	console.log(manga);
+	const manga = mangaList[0];
+	//console.log(manga);
 	if (manga) {
 		const chapters = manga.chapters;
 		if (isNaN(chapter)) {
+			console.log(_ctx.params.chapter);
+			// check if we can find the chapter by id instead
+			const C_chapter = await dbChapters.findOne({
+				_id: new ObjectId(_ctx.params.chapter),
+			});
+			console.log(C_chapter);
+			if (C_chapter) return new Response(JSON.stringify(C_chapter));
+
 			return new Response("Chapter not found", { status: 404 });
 		}
 
-		// check if theres a chapter 0 
-		const c = chapters.find((c: { number: number; }) => Number(c.number) == chapter);
 		const C_chapter = await dbChapters.findOne({
 			mangaId: manga._id,
-			_id: c._id
-		})
-		if (chapter > chapters.length || chapter < 0 || !c || !C_chapter) {
+			number: chapter,
+		},{
+			sort: {
+				number: 1,
+			}
+		});
+		if (chapter > chapters.length || chapter < 0 || !C_chapter) {
 			return new Response("Chapter not found", { status: 404 });
 		}
-		
 
 		return new Response(JSON.stringify(C_chapter));
 	} else {

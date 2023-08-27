@@ -105,6 +105,7 @@ async function main() {
 					mangaData[0].chapters = Chapters.map((chapter) => {
 						return {
 							_id: chapter._id,
+							number : chapter.number,
 						};
 					});
 					await dbManga.updateOne(
@@ -167,10 +168,16 @@ async function main() {
 
 					// delete old chapters
 					delete mangaData[0].chapters;
-					mangaData[0].chapters = list.insertedIds.map((id) => {
-						return {
-							_id: id,
-						};
+					mangaData[0].chapters = await dbChapters.find({
+						mangaId: mangaData[0]._id,
+						$in : list.insertedIds
+					}).toArray().then((chapters) => {
+						return chapters.map((chapter) => {
+							return {
+								_id: chapter._id,
+								number: chapter.number,
+							};
+						});
 					});
 				}
 
