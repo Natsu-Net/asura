@@ -2,7 +2,6 @@ import { HandlerContext } from "$fresh/server.ts";
 
 // Jokes courtesy of https://punsandoneliners.com/randomness/programmer-jokes/
 
-
 import { MongoClient } from "https://deno.land/x/mongo@v0.31.2/mod.ts";
 import { Manga } from "../../../utils/manga.ts";
 
@@ -18,29 +17,36 @@ const dbChapters = db.collection("chapters");
 
 export const handler = async (_req: Request, _ctx: HandlerContext): Promise<Response> => {
 	const slug = _ctx.params.slug;
-	const mangaList = (await dbManga.find({
-		slug
-	}).toArray()) as Manga[];
+	const mangaList = (await dbManga
+		.find({
+			slug,
+		})
+		.toArray()) as Manga[];
 
 	// get all chapters
-	
+
 	// check if manga is empty
 	if (mangaList.length === 0 || !slug) {
 		return new Response("Manga not found", { status: 404 });
 	}
-	
+
 	const manga = mangaList.find((manga) => manga.slug == slug || manga.originalSlug === slug);
 
-	
-
 	if (manga) {
-		const chapters = await dbChapters.find({
-			mangaId: manga._id 
-		}).toArray();
-		return new Response(JSON.stringify({
-			...manga,
-			chapters
-		}));
+		const chapters = await dbChapters
+			.find({
+				mangaId: manga._id,
+			})
+			.sort({
+				number: -1,
+			})
+			.toArray();
+		return new Response(
+			JSON.stringify({
+				...manga,
+				chapters: chapters.sort((a, b) => b.chapter - a.chapter),
+			}),
+		);
 	} else {
 		return new Response("Manga not found", { status: 404 });
 	}
