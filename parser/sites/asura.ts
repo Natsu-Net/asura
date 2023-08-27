@@ -150,34 +150,34 @@ export default class AsuraParser {
 			chapters: await this.getChapterList(url, slug),
 		};
 
-		const Posted_On =new Date(ss.Posted_On?.replace(/,/g, ""));
+		const Posted_On = new Date(ss.Posted_On?.replace(/,/g, ""));
 		let Updated_On = new Date(ss.Updated_On?.replace(/,/g, ""));
-		// set the hour to 12
-		Updated_On.setHours(16);
-		// check if Updated_On is in my dateList
-		if (this.dateList.includes(Updated_On.toISOString())) {
-			// if it is, remove 1 hour from it for every time it is in the list
-			const timeFond = this.dateList.filter((d) => d === Updated_On.toISOString()).length;
-			this.dateList.push(Updated_On.toISOString());
-			Updated_On.setTime(Updated_On.getTime() - (timeFond * 60 * 60 * 1000));
-		} else {
-			// if it isn't, add it to the list
-			this.dateList.push(Updated_On.toISOString());
+
+		// check if its today
+		if (Updated_On.toDateString() !== new Date().toDateString()) {
+			Updated_On.setHours(16);
+			// check if Updated_On is in my dateList
+			if (this.dateList.includes(Updated_On.toISOString())) {
+				// if it is, remove 1 hour from it for every time it is in the list
+				const timeFond = this.dateList.filter((d) => d === Updated_On.toISOString()).length;
+				this.dateList.push(Updated_On.toISOString());
+				Updated_On.setTime(Updated_On.getTime() - timeFond * 60 * 60 * 1000);
+			} else {
+				// if it isn't, add it to the list
+				this.dateList.push(Updated_On.toISOString());
+			}
 		}
-
-
 
 		details.Updated_On = Updated_On;
 		details.Posted_On = Posted_On;
 		details.Posted_By = ss.Posted_By?.replace(/,/g, "") ?? "-";
-		details.Author  = ss.Author?.replace(/,/g, "") ?? "-";
+		details.Author = ss.Author?.replace(/,/g, "") ?? "-";
 		details.Artist = ss.Artist?.replace(/,/g, "") ?? "-";
 		details.Rating = parent?.querySelector(".rating > .rating-prc > .num")?.textContent ?? 0;
-		details.Followers = parseInt(parent?.querySelector(".rt > .bmc")?.textContent.replace(/Followed by (.*?) people/gm,"$1") ?? "0");
+		details.Followers = parseInt(parent?.querySelector(".rt > .bmc")?.textContent.replace(/Followed by (.*?) people/gm, "$1") ?? "0");
 		details.Released = ss.Released?.replace(/,/g, "") ?? "";
 		details.Serialization = ss.Serialization?.replace(/,/g, "") ?? "";
 		details.Status = parent?.querySelector(".tsinfo > .imptdt > i")?.textContent ?? "";
-
 
 		return details;
 	}
