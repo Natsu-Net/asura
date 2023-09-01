@@ -1,7 +1,7 @@
 import "https://deno.land/x/dotenv@v3.2.2/load.ts";
 import AsuraParser from "./parser/sites/asura.ts";
 
-import { MongoClient, ObjectId } from "https://deno.land/x/mongo@v0.31.2/mod.ts";
+import { MongoClient, ObjectId } from "https://deno.land/x/mongo@v0.32.0/mod.ts";
 import { Chapter, Manga } from "./utils/manga.ts";
 const client = new MongoClient();
 

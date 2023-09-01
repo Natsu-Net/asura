@@ -2,7 +2,7 @@ import { HandlerContext } from "$fresh/server.ts";
 
 // Jokes courtesy of https://punsandoneliners.com/randomness/programmer-jokes/
 
-import { MongoClient } from "https://deno.land/x/mongo@v0.31.2/mod.ts";
+import { MongoClient } from "https://deno.land/x/mongo@v0.32.0/mod.ts";
 import { Manga } from "../../utils/manga.ts";
 
 const client = new MongoClient();

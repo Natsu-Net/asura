@@ -14,7 +14,7 @@ interface MangaData {
 
 export async function ServerFetcher(url: string) {
 
-	const MongoClient = (await import("https://deno.land/x/mongo@v0.31.2/mod.ts")).MongoClient;
+	const MongoClient = (await import("https://deno.land/x/mongo@v0.32.0/mod.ts")).MongoClient;
 
 	const client = new MongoClient();
 

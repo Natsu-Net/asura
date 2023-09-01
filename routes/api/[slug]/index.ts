@@ -2,7 +2,7 @@ import { HandlerContext } from "$fresh/server.ts";
 
 // Jokes courtesy of https://punsandoneliners.com/randomness/programmer-jokes/
 
-import { MongoClient } from "https://deno.land/x/mongo@v0.31.2/mod.ts";
+import { MongoClient } from "https://deno.land/x/mongo@v0.32.0/mod.ts";
 import { Manga } from "../../../utils/manga.ts";
 
 const client = new MongoClient();
@@ -23,6 +23,11 @@ export const handler = async (_req: Request, _ctx: HandlerContext): Promise<Resp
 		})
 		.toArray()) as Manga[];
 
+	const searchParams = new URL(_req.url).searchParams;
+
+	const includeChapters = searchParams.get("includeChapters") === "true" ? true : false;
+	console.log(includeChapters);
+
 	// get all chapters
 
 	// check if manga is empty
@@ -33,6 +38,10 @@ export const handler = async (_req: Request, _ctx: HandlerContext): Promise<Resp
 	const manga = mangaList.find((manga) => manga.slug == slug || manga.originalSlug === slug);
 
 	if (manga) {
+		if (!includeChapters) {
+			return new Response(JSON.stringify(manga));
+		}
+
 		const chapters = await dbChapters
 			.find({
 				mangaId: manga._id,

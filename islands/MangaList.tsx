@@ -5,7 +5,7 @@ function MangaDisplay(manga: Manga) {
 	async function openModal() {
 		// fetch manga details
 
-		const mangaDetails = await fetch(`/api/${manga.slug}`).then((res) => res.json()) as Manga;
+		const mangaDetails = await fetch(`/api/${manga.slug}?includeChapters=true`).then((res) => res.json()) as Manga;
 
 		showMangaDetails.value = mangaDetails;
 	}
