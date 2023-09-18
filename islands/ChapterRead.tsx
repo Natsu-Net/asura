@@ -191,7 +191,7 @@ export default function ChapterReader() {
 										if (autohide.value == "display:none") autohide.value = "display:flex";
 										else autohide.value = "display:none";
 									}}>
-									<div class="vstack col-md-3 mx-auto" id="scrollImgAreaReplace">
+									<div class="vstack col-md-12 col-xl-3 mx-auto" id="scrollImgAreaReplace">
 										{pages}
 									</div>
 								</div>

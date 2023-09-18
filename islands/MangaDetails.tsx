@@ -78,6 +78,7 @@ export default function MangaDetails() {
 
 										<button
 											type="button"
+											class="btn"
 											onClick={() => {
 												if (!r?.slug) return "";
 												if (!readChapterList.value[r.slug]) return;
@@ -86,7 +87,7 @@ export default function MangaDetails() {
 													[r.slug]: {},
 												};
 											}}>
-											<i class="fa-solid fa-trash" style="color: rgb(179, 0, 0);font-size: 24px;margin-right: 20px;"></i>
+											<i class="fa-solid fa-trash" style="color: rgb(179, 0, 0);font-size: 24px;"></i>
 										</button>
 
 										<button
