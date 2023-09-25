@@ -16,40 +16,44 @@ const dbManga = db.collection("manga");
 const dbChapters = db.collection("chapters");
 
 export const handler = async (_req: Request, _ctx: HandlerContext): Promise<Response> => {
+	const startTime = Date.now();
 	const slug = _ctx.params.slug;
-	const mangaList = (await dbManga
-		.find({
-			slug,
-		})
-		.toArray()) as Manga[];
-
 	const searchParams = new URL(_req.url).searchParams;
-
 	const includeChapters = searchParams.get("includeChapters") === "true" ? true : false;
-	console.log(includeChapters);
+	const manga = await dbManga.findOne({ slug: slug }) as Manga;
 
 	// get all chapters
 
 	// check if manga is empty
-	if (mangaList.length === 0 || !slug) {
+	if (!manga || !slug) {
 		return new Response("Manga not found", { status: 404 });
 	}
 
-	const manga = mangaList.find((manga) => manga.slug == slug || manga.originalSlug === slug);
-
 	if (manga) {
 		if (!includeChapters) {
+			console.log(`Took ${Date.now() - startTime}ms to fetch ${manga.slug}`);
 			return new Response(JSON.stringify(manga));
 		}
 
 		const chapters = await dbChapters
 			.find({
-				mangaId: manga._id,
+				$or : [
+					{
+						_id: {
+							$in: manga.chapters.map((chapter) => chapter._id),
+						}
+					},
+					{
+						mangaId: manga._id,
+					}
+				]
 			})
 			.sort({
 				number: -1,
 			})
 			.toArray();
+		console.log(`Took ${Date.now() - startTime}ms to fetch ${manga.slug} with chapters`);
+
 		return new Response(
 			JSON.stringify({
 				...manga,
