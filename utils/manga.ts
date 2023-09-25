@@ -1,8 +1,6 @@
 import { signal } from "@preact/signals";
 import { IS_BROWSER } from "$fresh/runtime.ts";
 
-
-
 interface Manga {
 	[x: string]: any;
 	Artist: string;
@@ -20,22 +18,23 @@ interface Manga {
 	// deno-lint-ignore no-explicit-any
 	parseChapters: () => Promise<any>;
 
-	Updated_On : string;
-	Posted_On : string;
-	Posted_By : string;
+	Updated_On: string;
+	Posted_On: string;
+	Posted_By: string;
 
-	Author : string;
-	Released : string;
-	Serialization : string;
-	Status : string;
+	Author: string;
+	Released: string;
+	Serialization: string;
+	Status: string;
 
-	Type : string;
-	Rating : number;
-	Followers : number;
+	Type: string;
+	Rating: number;
+	Followers: number;
 }
 
 interface Chapter {
-images: string;
+	_id?: any;
+	images: string;
 	title: string;
 	url: string;
 	date: string;
@@ -57,7 +56,7 @@ export const PaginationData = signal<{
 	pagesLeft: number;
 	total: number;
 	limit: number;
-	size : number;
+	size: number;
 }>({
 	page: 0,
 	pagesLeft: 0,
