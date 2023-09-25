@@ -91,8 +91,8 @@ async function main() {
 
 			if (mangaData[0].chapters.length < manga.chapters.length) {
 				console.log(`Found new chapters for ${manga.title}`);
-				console.log(mangaData[0].chapters.length , manga.chapters.length);
-				
+				console.log(mangaData[0].chapters.length, manga.chapters.length);
+
 				// get all chapters in the database
 				const Chapters = (await dbChapters
 					.find({
@@ -105,7 +105,7 @@ async function main() {
 					mangaData[0].chapters = Chapters.map((chapter) => {
 						return {
 							_id: chapter._id,
-							number : chapter.number,
+							number: chapter.number,
 						};
 					});
 					await dbManga.updateOne(
@@ -123,34 +123,31 @@ async function main() {
 				}
 
 				const chap = await manga.parseChapters();
-					// check if all chapters urls are newer than the ones in the database if not 
+				// check if all chapters urls are newer than the ones in the database if not
 				const oldChapters = Chapters.filter((chapter) => {
-					const newChapter = chap.chapters.find((c:dbChapters) => c.url === chapter.url);
+					const newChapter = chap.chapters.find((c: dbChapters) => c.url === chapter.url);
 					if (newChapter) {
 						return false;
 					}
 					return true;
-				})
-				const newChapters = chap.chapters.filter((chapter:Chapter) => {
-					const newChapter = Chapters.find((c:dbChapters) => c.number === chapter.number && c.url === chapter.url);
+				});
+				const newChapters = chap.chapters.filter((chapter: Chapter) => {
+					const newChapter = Chapters.find((c: dbChapters) => c.number === chapter.number && c.url === chapter.url);
 					if (newChapter) {
 						return false;
 					}
 					return true;
-				})
+				});
 
 				// delete old chapters
 				if (oldChapters.length > 0) {
-					await dbChapters.deleteMany(
-						{
-							_id: {
-								$in: oldChapters.map((chapter) => chapter._id),
-							}
-						}
-					);
+					await dbChapters.deleteMany({
+						_id: {
+							$in: oldChapters.map((chapter) => chapter._id),
+						},
+					});
 					console.log(`Deleted ${oldChapters.length} old chapters for ${manga.title}`);
 				}
-				
 
 				if (newChapters.length > 0) {
 					console.log(`Found ${newChapters.length} new chapters for ${manga.title}`);
@@ -170,19 +167,22 @@ async function main() {
 
 					// delete old chapters
 					delete mangaData[0].chapters;
-					mangaData[0].chapters = await dbChapters.find({
-						mangaId: mangaData[0]._id,
-						_id: {
-							$in: list.insertedIds,
-						}
-					}).toArray().then((chapters) => {
-						return chapters.map((chapter) => {
-							return {
-								_id: chapter._id,
-								number: chapter.number,
-							};
+					mangaData[0].chapters = await dbChapters
+						.find({
+							mangaId: mangaData[0]._id,
+							_id: {
+								$in: list.insertedIds,
+							},
+						})
+						.toArray()
+						.then((chapters) => {
+							return chapters.map((chapter) => {
+								return {
+									_id: chapter._id,
+									number: chapter.number,
+								};
+							});
 						});
-					});
 				}
 
 				// mangaData[0] the manga in the database
@@ -379,24 +379,39 @@ async function checkforNewDomains() {
 	parser.domain = newDomain.href;
 
 	// update database
-	await config.updateOne(
-		{
-			name: "domain",
-		},
-		{
-			$set: {
-				value: newDomain.href,
-			},
-		},
-	);
 	console.log("Updated domain in database" + newDomain.href);
 
 	// update all url in database
-	const mangas = (await dbManga.find({}).toArray()) as Manga[];
+
+	const mangas = (await dbManga
+		.find({
+			$or: [
+				{
+					url: {
+						$not : {
+							$regex: newDomain.href,
+						},
+					},
+				},
+				{
+					imgUrl: {
+						$not : {
+							$regex: newDomain.href,
+						},
+					},
+				},
+			],
+		})
+		.toArray()) as Manga[];
 	for (let i = 0; i < mangas.length; i++) {
 		const manga = mangas[i];
-		manga.url = manga.url.replace(oldDomain.href, newDomain.href);
-		manga.imgUrl = manga.imgUrl.replace(oldDomain.href, newDomain.href);
+		// parse old domain from url
+		const oldDomainFromUrl = new URL(manga.url);
+		const oldDomainFromIMGUrl = new URL(manga.imgUrl);
+		// replace old domain with new domain
+		manga.imgUrl = manga.imgUrl.replace(oldDomainFromIMGUrl.origin, newDomain.origin);
+		manga.url = manga.url.replace(oldDomainFromUrl.origin, newDomain.origin);
+
 		await dbManga.updateOne(
 			{
 				_id: manga._id,
@@ -404,21 +419,42 @@ async function checkforNewDomains() {
 			{
 				$set: {
 					url: manga.url,
+					imgUrl: manga.imgUrl,
 				},
 			},
 		);
 		// log the % of chapters updated
 		console.log(`Updated url for ${manga.title} ${i}/${mangas.length} - ${((i / mangas.length) * 100).toFixed(2)}%`);
 	}
-	const chapters = (await dbChapters.find({}).toArray()) as dbChapters[];
+
+	const chapters = (await dbChapters.find({
+		$or : [
+			{
+				url: {
+					$not : {
+						$regex: newDomain.href,
+					}
+				},
+			},
+			{
+				images: {
+					$not : {
+						$regex: newDomain.href,
+					}
+				},
+			},
+		]
+	}).toArray()) as dbChapters[];
 	for (let i = 0; i < chapters.length; i++) {
 		const chapter = chapters[i];
-		chapter.url = chapter.url.replace(oldDomain.href, newDomain.href);
+		const oldDomain = new URL(chapter.url);
+		chapter.url = chapter.url.replace(oldDomain.origin, newDomain.origin);
 
 		// do it for all images
 		for (let i = 0; i < chapter.images.length; i++) {
 			const image = chapter.images[i];
-			chapter.images[i] = image.replace(oldDomain.href, newDomain.href);
+			const oldDomain = new URL(image);
+			chapter.images[i] = image.replace(oldDomain.origin, newDomain.origin);
 		}
 
 		await dbChapters.updateOne(
@@ -435,6 +471,17 @@ async function checkforNewDomains() {
 		// log the % of chapters updated
 		console.log(`Updated url for ${chapter.title} ${i}/${chapters.length} - ${((i / chapters.length) * 100).toFixed(2)}%`);
 	}
+
+	await config.updateOne(
+		{
+			name: "domain",
+		},
+		{
+			$set: {
+				value: newDomain.href,
+			},
+		},
+	);
 }
 
 await checkforNewDomains();
