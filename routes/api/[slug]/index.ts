@@ -20,47 +20,41 @@ export const handler = async (_req: Request, _ctx: HandlerContext): Promise<Resp
 	const slug = _ctx.params.slug;
 	const searchParams = new URL(_req.url).searchParams;
 	const includeChapters = searchParams.get("includeChapters") === "true" ? true : false;
-	const manga = await dbManga.findOne({ slug: slug }) as Manga;
 
-	// get all chapters
+	let query: any = [
+		{
+			$match: {
+				slug,
+			},
+		},
+	];
+
+	if (includeChapters)
+		query.push({
+			$lookup: {
+				from: "chapters",
+				localField: "_id",
+				foreignField: "mangaId",
+				as: "chapters",
+				pipeline: [
+					{
+						$sort: {
+							number: -1,
+						},
+					},
+				],
+			},
+		});
+
+	const manga = ((await dbManga.aggregate(query).toArray()) as Manga[])?.[0];
+	console.log(manga);
 
 	// check if manga is empty
 	if (!manga || !slug) {
 		return new Response("Manga not found", { status: 404 });
 	}
 
-	if (manga) {
-		if (!includeChapters) {
-			console.log(`Took ${Date.now() - startTime}ms to fetch ${manga.slug}`);
-			return new Response(JSON.stringify(manga));
-		}
+	console.log(`Took ${Date.now() - startTime}ms to fetch ${manga.slug} with chapters`);
 
-		const chapters = await dbChapters
-			.find({
-				$or : [
-					{
-						_id: {
-							$in: manga.chapters.map((chapter) => chapter._id),
-						}
-					},
-					{
-						mangaId: manga._id,
-					}
-				]
-			})
-			.sort({
-				number: -1,
-			})
-			.toArray();
-		console.log(`Took ${Date.now() - startTime}ms to fetch ${manga.slug} with chapters`);
-
-		return new Response(
-			JSON.stringify({
-				...manga,
-				chapters: chapters.sort((a, b) => b.chapter - a.chapter),
-			}),
-		);
-	} else {
-		return new Response("Manga not found", { status: 404 });
-	}
+	return new Response(JSON.stringify(manga));
 };
