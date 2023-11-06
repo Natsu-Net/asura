@@ -1,5 +1,6 @@
 import { Signal } from "@preact/signals";
 import { Manga, showMangaDetails } from "../utils/manga.ts";
+import url from "https://deno.land/std@0.109.0/node/url.ts";
 
 function MangaDisplay(manga: Manga) {
 	async function openModal() {
@@ -10,13 +11,15 @@ function MangaDisplay(manga: Manga) {
 		showMangaDetails.value = mangaDetails;
 	}
 
+	const imageUrl = new URL(manga.imgUrl);
+
 	
 
 	return (
 		<div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-2 text-center">
 			<div class="position-relative m-2 manga-card top-50 start-50 translate-middle">
 				<a data-target="#readerModal" data-toggle="modal" id="readerModalButton" data-bs-slug={manga.slug} class="text-decoration-none readerModalButton" onClick={openModal}>
-					<img src={manga.imgUrl} alt={manga.title} class="shadow-lg bg-body-tertiary rounded" />
+					<img src={`/api/image?path=${imageUrl.pathname}`} alt={manga.title} class="shadow-lg bg-body-tertiary rounded" />
 					<div class="manga-details rounded">
 						<p class="manga-title">{manga.title}</p>
 					</div>

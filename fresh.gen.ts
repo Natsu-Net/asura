@@ -3,10 +3,11 @@
 // This file is automatically updated during development when running `dev.ts`.
 
 import * as $0 from "./routes/_app.tsx";
-import * as $1 from "./routes/api/[slug]/chapter/[chapter].ts";
+import * as $1 from "./routes/api/[slug]/chapter/[chapter]/index.ts";
 import * as $2 from "./routes/api/[slug]/index.ts";
-import * as $3 from "./routes/api/index.ts";
-import * as $4 from "./routes/index.tsx";
+import * as $3 from "./routes/api/image.ts";
+import * as $4 from "./routes/api/index.ts";
+import * as $5 from "./routes/index.tsx";
 import * as $$0 from "./islands/ChapterRead.tsx";
 import * as $$1 from "./islands/MangaDetails.tsx";
 import * as $$2 from "./islands/MangaList.tsx";
@@ -15,10 +16,11 @@ import * as $$3 from "./islands/Pagination.tsx";
 const manifest = {
   routes: {
     "./routes/_app.tsx": $0,
-    "./routes/api/[slug]/chapter/[chapter].ts": $1,
+    "./routes/api/[slug]/chapter/[chapter]/index.ts": $1,
     "./routes/api/[slug]/index.ts": $2,
-    "./routes/api/index.ts": $3,
-    "./routes/index.tsx": $4,
+    "./routes/api/image.ts": $3,
+    "./routes/api/index.ts": $4,
+    "./routes/index.tsx": $5,
   },
   islands: {
     "./islands/ChapterRead.tsx": $$0,

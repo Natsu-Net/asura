@@ -104,7 +104,7 @@ export default function MangaDetails() {
 								<div class="modal-body row">
 									<div class="row mb-1">
 										<div class="col-12 col-sm-12 col-md-12 col-xl-3 text-center">
-											<img src={r.imgUrl} alt={r.title} class="rounded mx-auto" width="100%" style="max-width:400px" />
+											<img src={`/api/image?path=` + r.imgUrl} alt={r.title} class="rounded mx-auto" width="100%" style="max-width:400px" />
 										</div>
 										<div class="col-12 col-sm-12 col-md-12 col-xl-9">
 											<h1>{r.title}</h1>

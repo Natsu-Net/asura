@@ -94,7 +94,7 @@ export default function ChapterReader() {
 			// fetch next chapter
 			const rs = next_chapter.images as unknown as string[];
 			const se = rs.map((e, i) => {
-				return `<img src="${e}" class="img-fluid autohide" width="100%" alt="${i.toString()}" />`;
+				return `<img src="/api/image?path=${e}" class="img-fluid autohide" width="100%" alt="${i.toString()}" />`;
 			});
 
 			// append to the end of the current chapter
