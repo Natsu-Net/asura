@@ -146,7 +146,7 @@ export default function ChapterReader() {
 
 			const rs = chapter.images as unknown as string[];
 			const se = rs.map((e, i) => {
-				return <img src={e} class="img-fluid autohide" width="100%" alt={i.toString()} />;
+				return <img src={`/api/image?path=` + e} class="img-fluid autohide" width="100%" alt={i.toString()} />;
 			});
 
 			setPages(se);
