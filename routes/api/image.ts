@@ -13,14 +13,14 @@ export const handler = async (_req: Request, _ctx: HandlerContext): Promise<Resp
 
 	// get query params
 	const params = new URL(_req.url).searchParams;
-	// check if path contains 2 url  example : https://asuratoon.com///unsafe/fit-in/720x936/https://asuratoon.com/wp-content/uploads/2023/11/Regressing-with-the-Kings-Power.jpg
+
 	// remove the first url and get the second url
-	let path = (params.get("path") ?? "") // remove everything infront of the https
+	const path = (params.get("path") ?? "") // remove everything infront of the https
 		.replace(/.*https/, "https") // remove everything after the .jpg
 		.replace(domain.value, "")
 	
 
-
+	// fetch the image
 	const image = await fetch(`${domain.value}${path}`).then((res) => res.arrayBuffer());
 
 	return new Response(image, {

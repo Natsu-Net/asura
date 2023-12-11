@@ -13,15 +13,16 @@ const db = client.database("asura");
 
 const dbManga = db.collection("manga");
 
-const dbChapters = db.collection("chapters");
-
 export const handler = async (_req: Request, _ctx: HandlerContext): Promise<Response> => {
 	const startTime = Date.now();
 	const slug = _ctx.params.slug;
 	const searchParams = new URL(_req.url).searchParams;
 	const includeChapters = searchParams.get("includeChapters") === "true" ? true : false;
 
-	let query: any = [
+	// check if slug is empty
+	if (!slug) return new Response("Manga not found", { status: 404 });
+
+	const query: any = [
 		{
 			$match: {
 				slug,
@@ -47,7 +48,6 @@ export const handler = async (_req: Request, _ctx: HandlerContext): Promise<Resp
 		});
 
 	const manga = ((await dbManga.aggregate(query).toArray()) as Manga[])?.[0];
-	console.log(manga);
 
 	// check if manga is empty
 	if (!manga || !slug) {
