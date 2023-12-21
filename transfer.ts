@@ -1,7 +1,6 @@
 import "https://deno.land/x/dotenv@v3.2.2/load.ts";
 
-import { MongoClient, ObjectId } from "https://deno.land/x/mongo@v0.32.0/mod.ts";
-import { Chapter, Manga } from "./utils/manga.ts";
+import { MongoClient } from "https://deno.land/x/mongo@v0.32.0/mod.ts";
 const client = new MongoClient();
 
 await client.connect(Deno.env.get("MONGO_URI") ?? "");
@@ -59,7 +58,7 @@ for (const manga of mangas) {
 		});
 		if (!newChapter) {
 			console.log(`Chapter ${chapter.number} does not exist`);
-			let c_id = await newDB.collection("chapters").insertOne({
+			const c_id = await newDB.collection("chapters").insertOne({
 				...chapter,
 				mangaId: m_id,
 			});
@@ -100,7 +99,7 @@ const newDomain = await newDB.collection("config").findOne({
 });
 
 if (!newDomain) {
-	await newDB.collection("config").insertOne(domain as any);
+	await newDB.collection("config").insertOne(domain as Document);
 	console.log(await newDB.collection("config").find())
 }
 

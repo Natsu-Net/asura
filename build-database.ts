@@ -1,7 +1,7 @@
 import "https://deno.land/x/dotenv@v3.2.2/load.ts";
 import AsuraParser from "./parser/sites/asura.ts";
 
-import { MongoClient, ObjectId } from "https://deno.land/x/mongo@v0.32.0/mod.ts";
+import { MongoClient } from "https://deno.land/x/mongo@v0.32.0/mod.ts";
 import { Chapter, Manga } from "./utils/manga.ts";
 const client = new MongoClient();
 
@@ -270,7 +270,7 @@ async function CleanDatabase() {
 		const manga = mangas[i];
 		if (firstFound.has(manga.slug)) {
 			console.log("Found duplicate for " + manga.title);
-			toDelete.push(manga._id);
+			toDelete.push(manga._id.toString());
 			console.log("Deleted " + manga.title);
 		} else {
 			firstFound.set(manga.slug, manga);

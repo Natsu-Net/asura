@@ -2,33 +2,35 @@
 // This file SHOULD be checked into source version control.
 // This file is automatically updated during development when running `dev.ts`.
 
-import * as $0 from "./routes/_app.tsx";
-import * as $1 from "./routes/api/[slug]/chapter/[chapter]/index.ts";
-import * as $2 from "./routes/api/[slug]/index.ts";
-import * as $3 from "./routes/api/image.ts";
-import * as $4 from "./routes/api/index.ts";
-import * as $5 from "./routes/index.tsx";
-import * as $$0 from "./islands/ChapterRead.tsx";
-import * as $$1 from "./islands/MangaDetails.tsx";
-import * as $$2 from "./islands/MangaList.tsx";
-import * as $$3 from "./islands/Pagination.tsx";
+import * as $_app from "./routes/_app.tsx";
+import * as $api_slug_chapter_chapter_index from "./routes/api/[slug]/chapter/[chapter]/index.ts";
+import * as $api_slug_index from "./routes/api/[slug]/index.ts";
+import * as $api_image from "./routes/api/image.ts";
+import * as $api_index from "./routes/api/index.ts";
+import * as $index from "./routes/index.tsx";
+import * as $ChapterRead from "./islands/ChapterRead.tsx";
+import * as $MangaDetails from "./islands/MangaDetails.tsx";
+import * as $MangaList from "./islands/MangaList.tsx";
+import * as $Pagination from "./islands/Pagination.tsx";
+import { type Manifest } from "$fresh/server.ts";
 
 const manifest = {
   routes: {
-    "./routes/_app.tsx": $0,
-    "./routes/api/[slug]/chapter/[chapter]/index.ts": $1,
-    "./routes/api/[slug]/index.ts": $2,
-    "./routes/api/image.ts": $3,
-    "./routes/api/index.ts": $4,
-    "./routes/index.tsx": $5,
+    "./routes/_app.tsx": $_app,
+    "./routes/api/[slug]/chapter/[chapter]/index.ts":
+      $api_slug_chapter_chapter_index,
+    "./routes/api/[slug]/index.ts": $api_slug_index,
+    "./routes/api/image.ts": $api_image,
+    "./routes/api/index.ts": $api_index,
+    "./routes/index.tsx": $index,
   },
   islands: {
-    "./islands/ChapterRead.tsx": $$0,
-    "./islands/MangaDetails.tsx": $$1,
-    "./islands/MangaList.tsx": $$2,
-    "./islands/Pagination.tsx": $$3,
+    "./islands/ChapterRead.tsx": $ChapterRead,
+    "./islands/MangaDetails.tsx": $MangaDetails,
+    "./islands/MangaList.tsx": $MangaList,
+    "./islands/Pagination.tsx": $Pagination,
   },
   baseUrl: import.meta.url,
-};
+} satisfies Manifest;
 
 export default manifest;
