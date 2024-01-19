@@ -18,6 +18,10 @@
 			  <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
 				<div class="accordion-body">
 					<h4>Get all the manga </h4>
+					<span>
+						Return :
+						<a data-bs-toggle="collapse" data-bs-target="#collapse2" aria-expanded="false" aria-controls="collapse2" href="!#">Array of comic</a>
+					</span>
 					<div class="options">
 						<div class="param">
 							<p>Parameters:</p>
@@ -41,10 +45,46 @@
 						<h4>Get a manga </h4>
 						<div class="options">
 							<p class="url"><span class="badge text-bg-success">GET</span> /api/:slug</p>
+							<span>
+								Return :
+								<ul>
+									<li>_id : string</li>
+									<li>title: string</li>
+									<li>genres: Array&lt;string&gt;</li>
+									<li>date: number</li>
+									<li>imgUrl : string</li>
+									<li>sypnosis : string</li>
+									<li>url : string</li>
+									<li>chapters : <ul>
+										<li>_id : string</li>
+										<li>number : number</li>
+										<li>title: string (if includeChapters)</li>
+										<li>url: string (if includeChapters)</li>
+										<li>date: number (if includeChapters)</li>
+									</ul></li>
+									<li>Updated_On : string</li>
+									<li>Posted_On : string</li>
+									<li>Posted_By : string</li>
+									<li>Author : </li>
+									<li>Artist : string</li>
+									<li>Rating : number</li>
+									<li>Followers : number</li>
+									<li>Released : string</li>
+									<li>Serialization : string</li>
+									<li>Status : string</li>
+									<li>slug : string</li>
+									<li>originalSlug : string</li>
+									<li>chapterNum : number</li>
+								</ul>
+							</span>
 							<div class="param">
 								<p>Parameters:</p>
 								<ul>
 									<li>slug: string</li>
+								</ul>
+								<p> Qeury param</p>
+								<ul>
+									<li>includeChapters: boolean</li>
 								</ul>
 							</div>
 						</div>
@@ -63,6 +103,17 @@
 						<h4 class="title">Get pages of a chapter</h2>
 						<div class="options">
 							<p class="url"><span class="badge text-bg-success">GET</span> /api/:slug/chapter/:chapter</p>
+							<span>
+								Return :
+								<ul>
+									<li>_id : string</li>
+									<li>title: string</li>
+									<li>url: string</li>
+									<li>date: number</li>
+									<li>number : number</li>
+									<li>images: Array&lt;string&gt;</li>
+								</ul>
+							</span>
 							<div class="param">
 								<p>Parameters:</p>
 								<ul>
@@ -71,11 +122,6 @@
 								</ul>
 							</div>
 							<div class="param">
-				
-								<p> Qeury param</p>
-								<ul>
-									<li>includeChapters: boolean</li>
-								</ul>
 							</div>
 						</div>
 						<p class="url-example">Example: <a href="/api/solo-leveling/chapter/1?">/api/solo-leveling/chapter/1</a></p>

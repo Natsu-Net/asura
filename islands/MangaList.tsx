@@ -35,7 +35,7 @@ export default function MangaList({ Mangas } : { Mangas: Signal<Manga[]> } ) {
 		return (
 			// center the spinner in the middle of the page taking the full height of the cards container
 			<div class="d-flex justify-content-center align-items-center" style="height:70vh">
-				<div class="spinner-border text-primary" role="status">
+				<div class="spinner-border text-primary"  style="width: 10rem; height: 10rem;" role="status">
 					<span class="visually-hidden">Loading...</span>
 				</div>
 			</div>
