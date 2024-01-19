@@ -25,15 +25,11 @@ export const handler = async (_req: Request, _ctx: HandlerContext): Promise<Resp
 	const manga = (await dbManga.findOne({
 		slug,
 	})) as Manga;
-
+	
 	// check if manga is empty
 	if (!manga) {
 		return new Response("Manga not found", { status: 404 });
 	}
-
-	const chapters = manga.chapters;
-	let res = null;
-
 	if (isNaN(chapter)) {
 		// check if we can find the chapter by id instead
 		const C_chapter = await dbChapters.findOne({
@@ -42,6 +38,10 @@ export const handler = async (_req: Request, _ctx: HandlerContext): Promise<Resp
 
 		if (!C_chapter) return new Response("Chapter not found", { status: 404 });
 	}
+	
+	const chapters = manga.chapters;
+	let res = null;
+
 
 	res =
 		res ??

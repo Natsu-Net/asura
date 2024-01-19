@@ -43,15 +43,7 @@ export const handler = async (_req: Request, _ctx: HandlerContext): Promise<Resp
 			Query.$and = [];
 		}
 		Query.$and.push({
-			$search: {
-				index: "default",
-				text: {
-					query: search,
-					path: {
-						wildcard: "*",
-					},
-				},
-			},
+			$text: { $search: search } 
 		});
 	}
 	if (genreSplit && genreSplit.length > 0 && genreSplit[0] != "") {
