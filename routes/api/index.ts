@@ -20,6 +20,7 @@ export const handler = async (_req: Request, _ctx: HandlerContext): Promise<Resp
 	const page = parseInt(searchParams.get("page") ?? "1");
 	const search = searchParams.get("search") ?? "";
 	const genres = searchParams.get("genres") ?? "";
+	const sort = searchParams.get("sort") ?? "Updated_On";
 
 	const genreSplit = genres?.split(",");
 
@@ -58,7 +59,7 @@ export const handler = async (_req: Request, _ctx: HandlerContext): Promise<Resp
 	const sdata = (await dbManga
 		.find(Query)
 		.sort({
-			Updated_On: -1,
+			[sort ? sort : 'Updated_On']: -1,
 		})
 		.skip(start)
 		.limit(limit)
