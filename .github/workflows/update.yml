@@ -7,7 +7,7 @@ permissions:
 jobs:
   pre_job:
     # continue-on-error: true # Uncomment once integration is finished
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     # Map a step output to a job output
     outputs:
       should_skip: ${{ steps.skip_check.outputs.should_skip }}
@@ -18,7 +18,7 @@ jobs:
           concurrent_skipping: 'always'
   crawling:
     needs: pre_job    
-    runs-on: "self-hosted"
+    runs-on: "ubuntu-latest"
 
     steps:
         - name: Checkout
