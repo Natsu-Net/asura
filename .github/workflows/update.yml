@@ -1,9 +1,5 @@
 name: Crawling and Updating Database
 
-on:
-  schedule:
-    - cron: '*/5 * * * *'
-  #push
 permissions:
   actions: write
   contents: read
