@@ -1,6 +1,6 @@
 {
   "lock": false,
-  "nodeModulesDir" : false,
+  "nodeModulesDir" : true,
   "tasks": {
     "start": "deno run -A --watch=static/,routes/ dev.ts",
     "update": "deno run -A -r https://fresh.deno.dev/update .",
