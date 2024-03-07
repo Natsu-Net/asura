@@ -2,9 +2,8 @@ import "https://deno.land/x/dotenv@v3.2.2/load.ts";
 import AsuraParser from "./parser/sites/asura.ts";
 
 import { Chapter, Manga } from "./utils/manga.ts";
-import { ObjectId } from "../../../../AppData/Local/deno/npm/registry.npmjs.org/bson/6.4.0/bson.d.ts";
 
-import { MongoClient } from "mongodb";
+import { MongoClient,ObjectId } from "mongodb";
 const client = await (new MongoClient(Deno.env.get("MONGO_URI") ?? "")).connect();
 
 const db = client.db("asura");
