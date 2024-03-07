@@ -8,4 +8,3 @@
 # Fresh build directory
 _fresh/
 .vscode/settings.json
-/node_modules
