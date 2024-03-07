@@ -145,7 +145,7 @@ async function main() {
 				if (oldChapters.length > 0) {
 					await dbChapters.deleteMany({
 						_id: {
-							$in: oldChapters.map((chapter) => chapter._id) as unknown as ObjectId[],
+							$in: oldChapters.map((chapter) => chapter._id) as unknown as ObjectId[] || [],
 						},
 					});
 					console.log(`Deleted ${oldChapters.length} old chapters for ${manga.title}`);
@@ -166,6 +166,11 @@ async function main() {
 						}),
 					);
 					console.log(`Inserted ${newChapters.length} new chapters for ${manga.title}`);
+					console.log(list.insertedIds)
+					let find = []
+					for (const key in list.insertedIds) {
+						find.push(list.insertedIds[key])
+					}
 
 					// delete old chapters
 					delete mangaData[0].chapters;
@@ -173,7 +178,7 @@ async function main() {
 						.find({
 							mangaId: mangaData[0]._id,
 							_id: {
-								$in: list.insertedIds as unknown as ObjectId[],
+								$in: find,
 							},
 						})
 						.toArray()
@@ -280,7 +285,7 @@ async function CleanDatabase() {
 	}
 	await dbManga.deleteMany({
 		_id: {
-			$in: toDelete as unknown as ObjectId[],
+			$in: toDelete as unknown as ObjectId[] || [],
 		},
 	});
 
@@ -346,7 +351,7 @@ async function CleanDatabase() {
 	}
 	await dbChapters.deleteMany({
 		_id: {
-			$in: toDelete as unknown as ObjectId[],
+			$in: toDelete as unknown as ObjectId[] || [],
 		},
 	});
 }
