@@ -4,7 +4,7 @@ import { HandlerContext } from "$fresh/server.ts";
 
 import { Manga } from "../../../utils/manga.ts";
 
-import { MongoClient,ObjectId } from "npm:mongodb@6.4";
+import { MongoClient,ObjectId } from "npm:mongodb";
 const client = await (new MongoClient(Deno.env.get("MONGO_URI") ?? "")).connect();
 
 const db = client.db("asura");
