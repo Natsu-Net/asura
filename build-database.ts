@@ -494,3 +494,9 @@ async function checkforNewDomains() {
 await checkforNewDomains();
 await main();
 await CleanDatabase();
+
+export {
+	checkforNewDomains,
+	main,
+	CleanDatabase
+}

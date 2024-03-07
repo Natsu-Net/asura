@@ -11,5 +11,12 @@ import manifest from "./fresh.gen.ts";
 
 import twindPlugin from "$fresh/plugins/twind.ts";
 import twindConfig from "./twind.config.ts";
+import {checkforNewDomains,main,CleanDatabase} from "./build-database.ts"
+
+Deno.cron("Check for update", "*/10 * * * *", async() => {
+	await checkforNewDomains();
+	await main();
+	await CleanDatabase();
+});
 
 await start(manifest, { plugins: [twindPlugin(twindConfig)] });
