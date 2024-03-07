@@ -2,14 +2,13 @@ import { HandlerContext } from "$fresh/server.ts";
 
 // Jokes courtesy of https://punsandoneliners.com/randomness/programmer-jokes/
 
-import { MongoClient } from "https://deno.land/x/mongo@v0.32.0/mod.ts";
 import { Manga } from "../../utils/manga.ts";
 
-const client = new MongoClient();
+import { MongoClient,ObjectId } from "npm:mongodb";
+const client = await (new MongoClient(Deno.env.get("MONGO_URI") ?? "")).connect();
 
-await client.connect(Deno.env.get("MONGO_URI") ?? "");
-
-const db = client.database("asura");
+const db = client.db("asura");
+const config = db.collection("config");
 
 const dbManga = db.collection("manga");
 
@@ -36,7 +35,6 @@ export const handler = async (_req: Request, _ctx: HandlerContext): Promise<Resp
 
 	const start = page - 1 < 0 ? 0 : page == 1 ? 0 : (page - 1) * limit;
 
-	// deno-lint-ignore no-explicit-any
 	const Query: any = {};
 
 	if (search) {

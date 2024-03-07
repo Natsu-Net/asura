@@ -1,14 +1,12 @@
 import { HandlerContext } from "$fresh/server.ts";
 
 // Jokes courtesy of https://punsandoneliners.com/randomness/programmer-jokes/
-import { MongoClient, ObjectId } from "https://deno.land/x/mongo@v0.31.0/mod.ts";
 import { Manga } from "../../../../../utils/manga.ts";
+import { MongoClient,ObjectId } from "npm:mongodb";
+const client = await (new MongoClient(Deno.env.get("MONGO_URI") ?? "")).connect();
 
-const client = new MongoClient();
-
-await client.connect(Deno.env.get("MONGO_URI") as string);
-
-const db = client.database("asura");
+const db = client.db("asura");
+const config = db.collection("config");
 
 const dbManga = db.collection("manga");
 

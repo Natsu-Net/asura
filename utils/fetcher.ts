@@ -14,13 +14,12 @@ interface MangaData {
 
 export async function ServerFetcher(url: string) {
 
-	const MongoClient = (await import("https://deno.land/x/mongo@v0.32.0/mod.ts")).MongoClient;
+	const MongoClient = (await import("npm:mongodb")).MongoClient;
 
-	const client = new MongoClient();
+	const client = await (new MongoClient(Deno.env.get("MONGO_URI") ?? "")).connect();
 
-	await client.connect(Deno.env.get("MONGO_URI") ?? "");
+	const db = client.db("asura");
 
-	const db = client.database("asura");
 
 	const dbManga = db.collection("manga");
 

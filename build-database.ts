@@ -1,13 +1,13 @@
 import "https://deno.land/x/dotenv@v3.2.2/load.ts";
 import AsuraParser from "./parser/sites/asura.ts";
 
-import { MongoClient } from "https://deno.land/x/mongo@v0.32.0/mod.ts";
 import { Chapter, Manga } from "./utils/manga.ts";
-const client = new MongoClient();
+import { ObjectId } from "../../../../AppData/Local/deno/npm/registry.npmjs.org/bson/6.4.0/bson.d.ts";
 
-await client.connect(Deno.env.get("MONGO_URI") ?? "");
+import { MongoClient } from "npm:mongodb";
+const client = await (new MongoClient(Deno.env.get("MONGO_URI") ?? "")).connect();
 
-const db = client.database("asura");
+const db = client.db("asura");
 
 const dbManga = db.collection("manga");
 
@@ -31,6 +31,7 @@ async function main() {
 	console.log(parser.domain);
 
 	for await (const manga of parser.getMangaList()) {
+		console.log(manga)
 		// check if manga is already in the database
 		const mangaData = await dbManga
 			.find({
@@ -38,6 +39,7 @@ async function main() {
 				// join chapters array
 			})
 			.toArray();
+
 
 		if (mangaData.length > 1) {
 			// delete all duplicates if they all have the same slug
@@ -56,22 +58,22 @@ async function main() {
 			if (sameSlug) {
 				console.log("They have the same slug, deleting all duplicates");
 				const MostChapters = (await dbChapters
-					.find({
-						mangaId: mangaData[0]._id,
-					})
-					.toArray()) as dbChapters[];
+          .find({
+            mangaId: mangaData[0]._id,
+          })
+          .toArray()) as unknown as dbChapters[];
 
 				// find the one with the most chapters and delete the rest
-				let mostChapters = mangaData[0];
+				let mostChapters = mangaData[0] as Manga;
 				for (let i = 0; i < mangaData.length; i++) {
 					const chapters = (await dbChapters
-						.find({
-							mangaId: mangaData[i]._id,
-						})
-						.toArray()) as dbChapters[];
+            .find({
+              mangaId: mangaData[i]._id,
+            })
+            .toArray()) as unknown as dbChapters[];
 
 					if (chapters.length > MostChapters.length) {
-						mostChapters = MostChapters;
+						mostChapters = MostChapters as unknown as Manga;
 						console.log("Found most chapters for " + mangaData[i].title + " with " + mangaData[i].chapters.length + " chapters" + " id: " + mangaData[i]._id);
 					}
 				}
@@ -95,10 +97,10 @@ async function main() {
 
 				// get all chapters in the database
 				const Chapters = (await dbChapters
-					.find({
-						mangaId: mangaData[0]._id,
-					})
-					.toArray()) as dbChapters[];
+          .find({
+            mangaId: mangaData[0]._id,
+          })
+          .toArray()) as unknown as dbChapters[];
 				// double check if all chapters are in the database
 				if (Chapters.length > mangaData[0].chapters.length) {
 					// check if all chapters are in the mangaData[0].chapters
@@ -143,7 +145,7 @@ async function main() {
 				if (oldChapters.length > 0) {
 					await dbChapters.deleteMany({
 						_id: {
-							$in: oldChapters.map((chapter) => chapter._id),
+							$in: oldChapters.map((chapter) => chapter._id) as unknown as ObjectId[],
 						},
 					});
 					console.log(`Deleted ${oldChapters.length} old chapters for ${manga.title}`);
@@ -171,7 +173,7 @@ async function main() {
 						.find({
 							mangaId: mangaData[0]._id,
 							_id: {
-								$in: list.insertedIds,
+								$in: list.insertedIds as unknown as ObjectId[],
 							},
 						})
 						.toArray()
@@ -278,7 +280,7 @@ async function CleanDatabase() {
 	}
 	await dbManga.deleteMany({
 		_id: {
-			$in: toDelete,
+			$in: toDelete as unknown as ObjectId[],
 		},
 	});
 
@@ -286,7 +288,7 @@ async function CleanDatabase() {
 	firstFound.clear();
 	toDelete.length = 0;
 	console.log(firstFound);
-	const chapters = (await dbChapters.find({}).toArray()) as dbChapters[];
+	const chapters = (await dbChapters.find({}).toArray()) as unknown as dbChapters[];
 	for (let i = 0; i < chapters.length; i++) {
 		const chapter = chapters[i];
 		if (firstFound.has(chapter.mangaId + chapter.number)) {
@@ -318,7 +320,7 @@ async function CleanDatabase() {
 					console.log("Second number: " + secondNumber);
 					await dbChapters.updateOne(
 						{
-							_id: chapter._id,
+							_id: chapter._id as unknown as ObjectId,
 						},
 						{
 							$set: {
@@ -328,7 +330,7 @@ async function CleanDatabase() {
 					);
 					await dbChapters.updateOne(
 						{
-							_id: (firstFound.get(chapter.mangaId + chapter.number) as dbChapters)._id,
+							_id: (firstFound.get(chapter.mangaId + chapter.number) as dbChapters)._id as unknown as ObjectId,
 						},
 						{
 							$set: {
@@ -344,7 +346,7 @@ async function CleanDatabase() {
 	}
 	await dbChapters.deleteMany({
 		_id: {
-			$in: toDelete,
+			$in: toDelete as unknown as ObjectId[],
 		},
 	});
 }
@@ -428,23 +430,23 @@ async function checkforNewDomains() {
 	}
 
 	const chapters = (await dbChapters.find({
-		$or : [
-			{
-				url: {
-					$not : {
-						$regex: newDomain.href,
-					}
-				},
-			},
-			{
-				images: {
-					$not : {
-						$regex: newDomain.href,
-					}
-				},
-			},
-		]
-	}).toArray()) as dbChapters[];
+    $or: [
+      {
+        url: {
+          $not: {
+            $regex: newDomain.href,
+          }
+        },
+      },
+      {
+        images: {
+          $not: {
+            $regex: newDomain.href,
+          }
+        },
+      },
+    ]
+  }).toArray()) as unknown as dbChapters[];
 	for (let i = 0; i < chapters.length; i++) {
 		const chapter = chapters[i];
 		const oldDomain = new URL(chapter.url);
@@ -459,7 +461,7 @@ async function checkforNewDomains() {
 
 		await dbChapters.updateOne(
 			{
-				_id: chapter._id,
+				_id: chapter._id as unknown as ObjectId,
 			},
 			{
 				$set: {

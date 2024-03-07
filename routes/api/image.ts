@@ -1,14 +1,13 @@
 import { HandlerContext } from "$fresh/server.ts";
-import { MongoClient, ObjectId } from "https://deno.land/x/mongo@v0.31.0/mod.ts";
-const client = new MongoClient();
+import { MongoClient,ObjectId } from "npm:mongodb";
+const client = await (new MongoClient(Deno.env.get("MONGO_URI") ?? "")).connect();
 
-await client.connect(Deno.env.get("MONGO_URI") as string);
-const db = client.database("asura");
+const db = client.db("asura");
 const config = db.collection("config");
 
 const domain = await config.findOne({
-	name: "domain",
-}) as { value: string };
+  name: "domain",
+}) as unknown as { value: string };
 export const handler = async (_req: Request, _ctx: HandlerContext): Promise<Response> => {
 
 	// get query params
