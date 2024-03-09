@@ -26,5 +26,6 @@
   },
   "compilerOptions": { "jsx": "react-jsx", "jsxImportSource": "preact" },
   "lint": { "rules": { "tags": ["fresh", "recommended"] } },
+  "unstable": ["byonm"],
   "exclude": ["**/_fresh/*"]
 }
