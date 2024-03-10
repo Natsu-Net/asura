@@ -3,5 +3,8 @@
   "deno.lint": true,
 "editor.defaultFormatter": "denoland.vscode-deno",
 "sarif-viewer.connectToGithubCodeScanning": "off",
-"deno.unstable": true
+"deno.unstable": true,
+"[typescript]": {
+	"editor.defaultFormatter": "esbenp.prettier-vscode"
+}
 }

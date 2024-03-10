@@ -1,10 +1,9 @@
 import { signal } from "@preact/signals";
 import { IS_BROWSER } from "$fresh/runtime.ts";
-import { ObjectId } from "https://deno.land/x/mongo@v0.32.0/mod.ts";
 
 interface Manga {
 	[x: string]: unknown;
-	_id: ObjectId;
+	_id: string;
 	Artist: string;
 	title: string;
 	slug: string;
@@ -35,7 +34,7 @@ interface Manga {
 }
 
 interface Chapter {
-	_id?: ObjectId;
+	_id?: string;
 	images: string;
 	title: string;
 	url: string;

@@ -151,7 +151,7 @@ export default class AsuraParser {
 		};
 
 		const Posted_On = new Date(ss.Posted_On?.replace(/,/g, ""));
-		let Updated_On = new Date(ss.Updated_On?.replace(/,/g, ""));
+		const Updated_On = new Date(ss.Updated_On?.replace(/,/g, ""));
 
 		// check if its today
 		if (Updated_On.toDateString() !== new Date().toDateString()) {

@@ -1,5 +1,5 @@
 import { HandlerContext } from "$fresh/server.ts";
-import { MongoClient,ObjectId } from "mongodb";
+import { MongoClient } from "npm:mongodb";
 const client = await (new MongoClient(Deno.env.get("MONGO_URI") ?? "")).connect();
 
 const db = client.db("asura");

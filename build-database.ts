@@ -3,7 +3,7 @@ import AsuraParser from "./parser/sites/asura.ts";
 
 import { Chapter, Manga } from "./utils/manga.ts";
 
-import { MongoClient,ObjectId } from "mongodb";
+import { MongoClient,ObjectId } from "npm:mongodb";
 const client = await (new MongoClient(Deno.env.get("MONGO_URI") ?? "")).connect();
 
 const db = client.db("asura");

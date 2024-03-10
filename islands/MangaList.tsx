@@ -1,6 +1,5 @@
 import { Signal } from "@preact/signals";
 import { Manga, showMangaDetails } from "../utils/manga.ts";
-import url from "https://deno.land/std@0.109.0/node/url.ts";
 
 function MangaDisplay(manga: Manga) {
 	async function openModal() {

@@ -1,18 +1,16 @@
-import { HandlerContext } from "$fresh/server.ts";
 
-// Jokes courtesy of https://punsandoneliners.com/randomness/programmer-jokes/
 
+import { FreshContext  } from "$fresh/server.ts";
 import { Manga } from "../../utils/manga.ts";
 
-import { MongoClient,ObjectId } from "mongodb";
+import { MongoClient } from "npm:mongodb";
 const client = await (new MongoClient(Deno.env.get("MONGO_URI") ?? "")).connect();
 
 const db = client.db("asura");
-const config = db.collection("config");
 
 const dbManga = db.collection("manga");
 
-export const handler = async (_req: Request, _ctx: HandlerContext): Promise<Response> => {
+export const handler = async (_req: Request, _ctx: FreshContext ): Promise<Response> => {
 
 	const searchParams = new URL(_req.url).searchParams;
 
@@ -55,13 +53,13 @@ export const handler = async (_req: Request, _ctx: HandlerContext): Promise<Resp
 	const count = await dbManga.countDocuments(Query);
 
 	const sdata = (await dbManga
-		.find(Query)
-		.sort({
-			[sort ? sort : 'Updated_On']: -1,
-		})
-		.skip(start)
-		.limit(limit)
-		.toArray()) as Manga[];
+    .find(Query)
+    .sort({
+      [sort ? sort : 'Updated_On']: -1,
+    })
+    .skip(start)
+    .limit(limit)
+    .toArray()) as unknown as Manga[];
 
 
 	const r = {

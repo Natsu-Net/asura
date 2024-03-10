@@ -14,8 +14,7 @@ interface MangaData {
 
 export async function ServerFetcher(url: string) {
 
-	const MongoClient = (await import("mongodb")).MongoClient;
-
+	const MongoClient = (await import("npm:mongodb")).MongoClient;
 	const client = await (new MongoClient(Deno.env.get("MONGO_URI") ?? "")).connect();
 
 	const db = client.db("asura");
@@ -64,8 +63,8 @@ export async function ServerFetcher(url: string) {
 	const count = await dbManga.countDocuments(Query);
 
 	const sdata = (await dbManga.find(Query).sort({
-		Updated_On: -1,
-	}).skip(start).limit(limit).toArray()) as Manga[];
+    Updated_On: -1,
+  }).skip(start).limit(limit).toArray()) as unknown as Manga[];
 
 
 
@@ -85,8 +84,4 @@ export async function ServerFetcher(url: string) {
 
 
 	return r as MangaData;
-}
-
-export async function ClientFetcher(url: string) {
-	return await fetch(url).then((res) => res.json());
 }

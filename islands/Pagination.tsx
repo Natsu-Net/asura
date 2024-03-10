@@ -98,7 +98,7 @@ export default function Pagination({ PaginationData,currentPage,MangaListData }:
 		}
 
 
-		const data = await ClientFetcher( "/api" + url.pathname + url.search + "&limit=" + PAGES_SIZE.toString());
+		const data = await fetch("/api" + url.pathname + url.search + "&limit=" + PAGES_SIZE.toString()).then((res) => res.json());
 		console.log(data);
 		
 		MangaListData.value = data.data;
