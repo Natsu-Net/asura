@@ -197,7 +197,7 @@ export default function Home({ data }: { data: MangaData }) {
 					<div class="text-center p-3 bg-body-tertiary">
 						<span class="text-white">
 							Made with ❤️ by Aiko <br />
-							Powered by{" "}
+							Powered by 
 							<a href="https://deno.com" class="text-decoration-none">
 								🦖
 							</a>

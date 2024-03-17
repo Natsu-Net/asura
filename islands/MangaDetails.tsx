@@ -48,6 +48,7 @@ export default function MangaDetails() {
 		}
 		chap = r?.chapters.find((c) => Number(c.number) === chap) as Chapter;
 
+		
 		showChapterRead.value = chap;
 		if (!r?.slug) return "";
 		if (!readChapterList.value[r.slug]) readChapterList.value[r.slug] = {};
@@ -162,7 +163,7 @@ export default function MangaDetails() {
 											return (
 												<div class="col">
 													<div class="m-1">
-														<a data-target="#readerModalPage" data-toggle="modal" id="readerModalButtonPage" data-bs-slug={chap.number} class="text-decoration-none readerModalButtonPage" data-chap={chap.number} onClick={readChapter}>
+														<a data-target="#readerModalPage" data-toggle="modal" id="readerModalButtonPage" data-bs-slug={chap.number} class="text-decoration-none readerModalButtonPage" data-chap={chap._id} onClick={readChapter}>
 															<div class={read ? "text-white bg-success text-white p-2 rounded" : "bg-secondary-subtle text-white p-2 rounded"}>
 																<h6>{chap.title}</h6>
 																<p>{chap.date}</p>

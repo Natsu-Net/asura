@@ -1,7 +1,5 @@
-import { HandlerContext } from "$fresh/server.ts";
 
-// Jokes courtesy of https://punsandoneliners.com/randomness/programmer-jokes/
-
+import { FreshContext } from "$fresh/server.ts";
 import { Manga } from "../../../utils/manga.ts";
 
 import { MongoClient } from "npm:mongodb";
@@ -11,7 +9,7 @@ const db = client.db("asura");
 
 const dbManga = db.collection("manga");
 
-export const handler = async (_req: Request, _ctx: HandlerContext): Promise<Response> => {
+export const handler = async (_req: Request, _ctx: FreshContext): Promise<Response> => {
 	const startTime = Date.now();
 	const slug = _ctx.params.slug;
 	const searchParams = new URL(_req.url).searchParams;
@@ -32,8 +30,8 @@ export const handler = async (_req: Request, _ctx: HandlerContext): Promise<Resp
 		query.push({
 			$lookup: {
 				from: "chapters",
-				localField: "_id",
-				foreignField: "mangaId",
+				localField: "chapters._id",
+				foreignField: "_id",
 				as: "chapters",
 				pipeline: [
 					{
@@ -44,8 +42,9 @@ export const handler = async (_req: Request, _ctx: HandlerContext): Promise<Resp
 				],
 			},
 		});
+	const result = dbManga.aggregate(query);
 
-	const manga = ((await dbManga.aggregate(query).toArray()) as Manga[])?.[0];
+	const manga = (await result.toArray() as Manga[])?.[0];
 
 	// check if manga is empty
 	if (!manga || !slug) {

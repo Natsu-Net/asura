@@ -216,7 +216,7 @@ async function main() {
 			manga.chapters = [];
 			// insert manga into database
 			const mangaDataID = await dbManga.insertOne({
-				...manga,
+				...manga as unknown as Document,
 			});
 			const chapt: Array<{ number: number }> = [];
 
@@ -269,7 +269,7 @@ async function main() {
 
 async function CleanDatabase() {
 	// make sure theirs no duplicates
-	const mangas = (await dbManga.find({}).toArray()) as Manga[];
+	const mangas = (await dbManga.find({}).toArray()) as unknown as Manga[];
 	const firstFound = new Map<string, dbChapters | Manga>();
 	const toDelete = new Array<string>();
 	for (let i = 0; i < mangas.length; i++) {
@@ -390,25 +390,25 @@ async function checkforNewDomains() {
 	// update all url in database
 
 	const mangas = (await dbManga
-		.find({
-			$or: [
-				{
-					url: {
-						$not : {
-							$regex: newDomain.href,
-						},
-					},
-				},
-				{
-					imgUrl: {
-						$not : {
-							$regex: newDomain.href,
-						},
-					},
-				},
-			],
-		})
-		.toArray()) as Manga[];
+    .find({
+      $or: [
+        {
+          url: {
+            $not: {
+              $regex: newDomain.href,
+            },
+          },
+        },
+        {
+          imgUrl: {
+            $not: {
+              $regex: newDomain.href,
+            },
+          },
+        },
+      ],
+    })
+    .toArray()) as unknown as Manga[];
 	for (let i = 0; i < mangas.length; i++) {
 		const manga = mangas[i];
 		// parse old domain from url

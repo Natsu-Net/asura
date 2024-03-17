@@ -1,7 +1,6 @@
 // "total":181,"page":0,"pagesLeft":19,"limit":10
 
 import { Signal } from "@preact/signals";
-import { ClientFetcher } from "../utils/fetcher.ts";
 import { Manga } from "../utils/manga.ts";
 
 interface PaginationData {

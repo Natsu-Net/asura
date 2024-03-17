@@ -28,8 +28,6 @@ export default function ChapterReader() {
 		const { scrollHeight, scrollTop, clientHeight } = e.target as HTMLDivElement;
 		const target = e.target as HTMLDivElement;
 
-		console.log(scrollHeight, scrollTop, clientHeight);
-
 		if (scrollTop >= lastScroll + 200 && autohide.value == "display:flex") {
 			lastScroll = scrollTop;
 			autohide.value = "display:none";
