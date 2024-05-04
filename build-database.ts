@@ -105,6 +105,37 @@ async function main() {
 				console.log(`Updated ${manga.title} with new image`);
 			}
 
+			// check for the popularity of the manga
+			if (mangaData[0].Followers !== manga.Followers && manga.Followers > 0) {
+				console.log(`Found new followers for ${manga.title}`);
+				await dbManga.updateOne(
+					{
+						_id: mangaData[0]._id,
+					},
+					{
+						$set: {
+							Followers: manga.Followers,
+						},
+					},
+				);
+				console.log(`Updated ${manga.title} with new followers`);
+			}
+
+			// check for rating
+			if (mangaData[0].Rating !== manga.Rating && manga.Rating > 0) {
+				console.log(`Found new rating for ${manga.title}`);
+				await dbManga.updateOne(
+					{
+						_id: mangaData[0]._id,
+					},
+					{
+						$set: {
+							Rating: manga.Rating,
+						},
+					},
+				);
+				console.log(`Updated ${manga.title} with new rating`);
+			}
 
 			// check if there's a new chapter in the manga
 
