@@ -88,6 +88,24 @@ async function main() {
 		}
 
 		if (mangaData[0]) {
+			// check if img is diff
+			if (mangaData[0].imgUrl !== manga.imgUrl || mangaData[0].url !== manga.url) {
+				console.log(`Found new image for ${manga.title}`);
+				await dbManga.updateOne(
+					{
+						_id: mangaData[0]._id,
+					},
+					{
+						$set: {
+							imgUrl: manga.imgUrl,
+							url: manga.url,
+						},
+					},
+				);
+				console.log(`Updated ${manga.title} with new image`);
+			}
+
+
 			// check if there's a new chapter in the manga
 
 			if (mangaData[0].chapters.length < manga.chapters.length) {
@@ -383,6 +401,7 @@ async function checkforNewDomains() {
 	const newDomain = new URL(response.headers.get("location") ?? "");
 	console.log("Domain down, fetching new domain from redirect: " + newDomain.href);
 	parser.domain = newDomain.href;
+	console.log("Updated domain in parser" + newDomain.href);
 
 	// update database
 	console.log("Updated domain in database" + newDomain.href);
@@ -409,14 +428,18 @@ async function checkforNewDomains() {
       ],
     })
     .toArray()) as unknown as Manga[];
+
+
 	for (let i = 0; i < mangas.length; i++) {
 		const manga = mangas[i];
 		// parse old domain from url
 		const oldDomainFromUrl = new URL(manga.url);
 		const oldDomainFromIMGUrl = new URL(manga.imgUrl);
+		console.log(oldDomainFromIMGUrl,oldDomainFromUrl)
 		// replace old domain with new domain
 		manga.imgUrl = manga.imgUrl.replace(oldDomainFromIMGUrl.origin, newDomain.origin);
 		manga.url = manga.url.replace(oldDomainFromUrl.origin, newDomain.origin);
+		console.log(manga.imgUrl,manga.url)
 
 		await dbManga.updateOne(
 			{

@@ -8,7 +8,7 @@
     "preview": "deno run -A main.ts"
   },
   "imports": {
-    "$fresh/": "https://deno.land/x/fresh@1.6.7/",
+    "$fresh/": "https://deno.land/x/fresh@1.6.8/",
     "$postcss/": "https://deno.land/x/postcss@8.4.16/",
     "preact": "https://esm.sh/preact@10.19.6",
     "preact/": "https://esm.sh/preact@10.19.6/",
