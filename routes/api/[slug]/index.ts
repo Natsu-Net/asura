@@ -30,8 +30,8 @@ export const handler = async (_req: Request, _ctx: FreshContext): Promise<Respon
 		query.push({
 			$lookup: {
 				from: "chapters",
-				localField: "chapters._id",
-				foreignField: "_id",
+				localField: "_id",
+				foreignField: "mangaId",
 				as: "chapters",
 				pipeline: [
 					{
