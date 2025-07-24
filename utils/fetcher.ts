@@ -1,5 +1,6 @@
 /// <reference lib="deno.unstable" />
 import type { Manga } from "./manga.ts";
+import { openKv } from "./kv.ts";
 
 interface Genre {
 	name: string;
@@ -39,7 +40,7 @@ function filterManga(manga: Manga, search: string, genreSplit: string[]): boolea
 }
 
 export async function ServerFetcher(url: string) {
-	const kv = await Deno.openKv("https://api.deno.com/databases/82c53b38-af0e-4fa6-9009-ec428bfab4a3/connect");
+	const kv = await openKv();
 	
 	const searchParams = new URL(url).searchParams;
 
@@ -102,14 +103,14 @@ export async function ServerFetcher(url: string) {
 
 // Helper function to store manga in KV
 export async function storeManga(manga: Manga) {
-	const kv = await Deno.openKv("https://api.deno.com/databases/82c53b38-af0e-4fa6-9009-ec428bfab4a3/connect");
+	const kv = await openKv();
 	await kv.set(["manga", manga.slug], manga);
 	kv.close();
 }
 
 // Helper function to get manga by slug
 export async function getMangaBySlug(slug: string): Promise<Manga | null> {
-	const kv = await Deno.openKv("https://api.deno.com/databases/82c53b38-af0e-4fa6-9009-ec428bfab4a3/connect");
+	const kv = await openKv();
 	const result = await kv.get(["manga", slug]);
 	kv.close();
 	return result.value as Manga | null;
@@ -117,7 +118,7 @@ export async function getMangaBySlug(slug: string): Promise<Manga | null> {
 
 // Helper function to get all manga slugs
 export async function getAllMangaSlugs(): Promise<string[]> {
-	const kv = await Deno.openKv("https://api.deno.com/databases/82c53b38-af0e-4fa6-9009-ec428bfab4a3/connect");
+	const kv = await openKv();
 	const slugs: string[] = [];
 	const iter = kv.list({ prefix: ["manga"] });
 	
@@ -134,7 +135,7 @@ export async function getAllMangaSlugs(): Promise<string[]> {
 
 // Helper function to get the last update timestamp
 export async function getLastUpdateDate(): Promise<string | null> {
-	const kv = await Deno.openKv("https://api.deno.com/databases/82c53b38-af0e-4fa6-9009-ec428bfab4a3/connect");
+	const kv = await openKv();
 	const result = await kv.get(["config", "lastUpdate"]);
 	kv.close();
 	return result.value as string | null;
@@ -142,7 +143,7 @@ export async function getLastUpdateDate(): Promise<string | null> {
 
 // Helper function to set the last update timestamp
 export async function setLastUpdateDate(date: string) {
-	const kv = await Deno.openKv("https://api.deno.com/databases/82c53b38-af0e-4fa6-9009-ec428bfab4a3/connect");
+	const kv = await openKv();
 	await kv.set(["config", "lastUpdate"], date);
 	kv.close();
 }

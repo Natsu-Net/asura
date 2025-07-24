@@ -1,10 +1,12 @@
 // Simple offline test without external dependencies
+import { openKv } from "./utils/kv.ts";
+
 async function testBasicFunctionality() {
 	console.log("Testing basic functionality...");
 	
 	// Test Deno KV basic functionality
 	try {
-		const kv = await Deno.openKv("https://api.deno.com/databases/82c53b38-af0e-4fa6-9009-ec428bfab4a3/connect");
+		const kv = await openKv();
 		
 		// Test basic KV operations
 		await kv.set(["test"], "value");

@@ -1,8 +1,9 @@
 /// <reference lib="deno.unstable" />
 import { HandlerContext } from "$fresh/server.ts";
+import { openKv } from "../../utils/kv.ts";
 
 export const handler = async (_req: Request, _ctx: HandlerContext): Promise<Response> => {
-	const kv = await Deno.openKv("https://api.deno.com/databases/82c53b38-af0e-4fa6-9009-ec428bfab4a3/connect");
+	const kv = await openKv();
 	
 	// Get domain from KV store
 	const domainConfig = await kv.get(["config", "domain"]);

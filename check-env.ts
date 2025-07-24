@@ -1,4 +1,5 @@
 /// <reference lib="deno.unstable" />
+import { openKv } from "./utils/kv.ts";
 
 /**
  * Environment configuration check utility
@@ -58,7 +59,7 @@ console.log();
 // Test KV connection
 try {
   console.log("🗄️  Testing KV Connection...");
-  const kv = await Deno.openKv("https://api.deno.com/databases/82c53b38-af0e-4fa6-9009-ec428bfab4a3/connect");
+  const kv = await openKv();
   console.log("  ✓ KV connection successful");
   
   // Test a simple operation
