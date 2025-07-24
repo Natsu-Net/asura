@@ -15,6 +15,7 @@ import * as $ChapterRead from "./islands/ChapterRead.tsx";
 import * as $MangaDetails from "./islands/MangaDetails.tsx";
 import * as $MangaList from "./islands/MangaList.tsx";
 import * as $Pagination from "./islands/Pagination.tsx";
+import * as $SearchBar from "./islands/SearchBar.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
 const manifest = {
@@ -35,6 +36,7 @@ const manifest = {
     "./islands/MangaDetails.tsx": $MangaDetails,
     "./islands/MangaList.tsx": $MangaList,
     "./islands/Pagination.tsx": $Pagination,
+    "./islands/SearchBar.tsx": $SearchBar,
   },
   baseUrl: import.meta.url,
 } satisfies Manifest;

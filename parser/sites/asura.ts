@@ -66,7 +66,7 @@ export default class AsuraParser {
 			}
 			
 			console.log(`Processing ${uniqueLinksThisPage.size} new manga from page ${currentPage}`);
-			let newMangaCount = 0;
+			let processedCount = 0;
 
 			for (const href of uniqueLinksThisPage) {
 				try {
@@ -97,7 +97,7 @@ export default class AsuraParser {
 					details.slug = slug;
 					details.originalSlug = mangaSlug;
 					details.url = url;
-					newMangaCount++;
+					processedCount++;
 
 					// check if the manga is already in the list and update it
 					if (mangaData) {
@@ -123,11 +123,9 @@ export default class AsuraParser {
 				}
 			}
 
-			// If no new manga found, we might have reached the end
-			if (newMangaCount === 0) {
-				console.log(`No new manga found on page ${currentPage}, stopping`);
-				break;
-			}
+			// Always continue to next page until we reach the limit or no links found
+			// Don't stop just because we processed existing manga
+			console.log(`Processed ${processedCount} manga from page ${currentPage}`);
 			
 			currentPage++;
 			if (currentPage > 10) {
@@ -247,12 +245,33 @@ export default class AsuraParser {
 
 		for (const link of chapterLinks) {
 			const url = link.getAttribute("href");
-			const title = link.textContent?.trim() || "";
+			const rawTitle = link.textContent?.trim() || "";
 			
 			// Extract chapter number from URL or title
 			const urlMatch = url?.match(/\/chapter\/([0-9]+(?:\.[0-9]+)?)/);
-			const titleMatch = title.match(/chapter[^0-9]*([0-9]+(?:\.[0-9]+)?)/i);
+			const titleMatch = rawTitle.match(/chapter[^0-9]*([0-9]+(?:\.[0-9]+)?)/i);
 			const number = urlMatch?.[1] || titleMatch?.[1] || "";
+
+			// Clean up the title - remove extra text and normalize
+			let title = rawTitle;
+			
+			// Remove common prefixes/suffixes that cause duplicates
+			title = title.replace(/^(New Chapter|Latest Chapter)\s*/i, '');
+			title = title.replace(/\s*(January|February|March|April|May|June|July|August|September|October|November|December)[^0-9]*[0-9]{1,2}(st|nd|rd|th)?\s*[0-9]{4}\s*$/i, '');
+			title = title.replace(/\s*[0-9]{1,2}\/[0-9]{1,2}\/[0-9]{4}\s*$/, ''); // Remove MM/DD/YYYY dates
+			title = title.replace(/\s*[0-9]{4}-[0-9]{2}-[0-9]{2}\s*$/, ''); // Remove YYYY-MM-DD dates
+			
+			// If we have a chapter number, normalize the title format
+			if (number) {
+				// Check if title already has proper chapter format
+				if (!title.match(/^Chapter\s+[0-9]+/i)) {
+					title = `Chapter ${number}`;
+				}
+				// Clean up any double "Chapter" text
+				title = title.replace(/Chapter\s+Chapter\s+/gi, 'Chapter ');
+			}
+			
+			title = title.trim();
 
 			// Try to extract date from surrounding elements
 			const parentElement = link.closest('li') || link.parentElement;
@@ -262,9 +281,21 @@ export default class AsuraParser {
 			const date = dateElement?.textContent?.trim() || new Date().toISOString().split('T')[0];
 
 			if (url && title && number) {
+				// Ensure the URL includes /series/ prefix for correct format
+				let fullUrl = url;
+				if (url.startsWith('http')) {
+					fullUrl = url;
+				} else if (url.startsWith('/series/')) {
+					fullUrl = `${this.domain}${url}`;
+				} else if (url.startsWith('/')) {
+					fullUrl = `${this.domain}/series${url}`;
+				} else {
+					fullUrl = `${this.domain}/series/${url}`;
+				}
+				
 				chapters.push({
 					title,
-					url: url.startsWith('http') ? url : url.startsWith('/') ? `${this.domain}${url}` : `${this.domain}/${url}`,
+					url: fullUrl,
 					date,
 					number,
 					pages: [],
@@ -283,25 +314,30 @@ export default class AsuraParser {
 		const imagePattern = /https:\/\/gg\.asuracomic\.net\/storage\/media\/\d+\/conversions\/[^'\"\\s]+\.webp/g;
 		const allImages = html.match(imagePattern) || [];
 
-		// Filter for chapter page images (higher media IDs, usually > 100000)
-		const chapterImages = allImages.filter(imageUrl => {
+		// Remove duplicates first
+		const uniqueImages = [...new Set(allImages)];
+		
+		// Filter out common UI images (very low media IDs, usually < 50)
+		const chapterImages = uniqueImages.filter(imageUrl => {
 			const mediaIdMatch = imageUrl.match(/media\/(\d+)\//);
-			return mediaIdMatch && parseInt(mediaIdMatch[1]) > 100000;
+			if (!mediaIdMatch) return false;
+			
+			const mediaId = parseInt(mediaIdMatch[1]);
+			// Keep images with media ID > 50 to filter out logo and UI elements
+			return mediaId > 50;
 		});
-
-		// Remove duplicates and sort by filename/order
-		const uniqueImages = [...new Set(chapterImages)];
 		
 		// Sort by the numeric part in the filename (01, 02, 03, etc.)
-		uniqueImages.sort((a, b) => {
-			const aMatch = a.match(/\/(\d+)-optimized\.webp$/);
-			const bMatch = b.match(/\/(\d+)-optimized\.webp$/);
+		chapterImages.sort((a, b) => {
+			const aMatch = a.match(/\/([a-f0-9]+)-optimized\.webp$/);
+			const bMatch = b.match(/\/([a-f0-9]+)-optimized\.webp$/);
 			if (aMatch && bMatch) {
-				return parseInt(aMatch[1]) - parseInt(bMatch[1]);
+				// If they're hex strings, compare as strings
+				return aMatch[1].localeCompare(bMatch[1]);
 			}
 			return a.localeCompare(b);
 		});
 
-		return uniqueImages;
+		return chapterImages;
 	}
 }

@@ -14,13 +14,13 @@ function MangaDisplay(manga: Manga) {
 
 	return (
 		<div class="group cursor-pointer">
-			<div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-gray-700 hover:border-blue-500" onClick={openModal}>
+			<div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-gray-700 hover:border-blue-500 h-full" onClick={openModal}>
 				<div class="relative overflow-hidden">
-					<img src={manga.imgUrl} alt={manga.title} class="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-110" loading="lazy" />
+					<img src={manga.imgUrl} alt={manga.title} class="w-full h-48 sm:h-56 md:h-64 object-cover transition-transform duration-300 group-hover:scale-110" loading="lazy" />
 					<div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-						<div class="absolute bottom-0 left-0 right-0 p-4 text-white">
-							<h3 class="text-lg font-bold mb-2 leading-tight">{manga.title}</h3>
-							<div class="flex flex-wrap gap-2 mb-3">
+						<div class="absolute bottom-0 left-0 right-0 p-3 sm:p-4 text-white">
+							<h3 class="text-sm sm:text-base lg:text-lg font-bold mb-2 leading-tight line-clamp-2">{manga.title}</h3>
+							<div class="flex flex-wrap gap-1 sm:gap-2 mb-2 sm:mb-3">
 								{manga.Rating > 0 && (
 									<span class="px-2 py-1 bg-yellow-600 rounded-full text-xs font-medium">
 										⭐ {manga.Rating.toFixed(1)}
@@ -43,9 +43,9 @@ function MangaDisplay(manga: Manga) {
 						</div>
 					</div>
 				</div>
-				<div class="p-4">
-					<h4 class="text-white font-bold text-lg mb-2 leading-tight group-hover:text-blue-400 transition-colors duration-200">{manga.title}</h4>
-					<div class="flex items-center justify-between text-sm text-gray-400">
+				<div class="p-3 sm:p-4">
+					<h4 class="text-white font-bold text-sm sm:text-base lg:text-lg mb-2 leading-tight group-hover:text-blue-400 transition-colors duration-200 line-clamp-2">{manga.title}</h4>
+					<div class="flex items-center justify-between text-xs sm:text-sm text-gray-400">
 						<span class="flex items-center gap-1">
 							<i class="fa-solid fa-book text-blue-400"></i>
 							{manga.chapters?.length || 0} chapters
@@ -53,7 +53,8 @@ function MangaDisplay(manga: Manga) {
 						{manga.Followers > 0 && (
 							<span class="flex items-center gap-1">
 								<i class="fa-solid fa-users text-purple-400"></i>
-								{manga.Followers.toLocaleString()}
+								<span class="hidden sm:inline">{manga.Followers.toLocaleString()}</span>
+								<span class="sm:hidden">{manga.Followers > 1000 ? `${(manga.Followers/1000).toFixed(1)}k` : manga.Followers}</span>
 							</span>
 						)}
 					</div>
@@ -90,7 +91,7 @@ export default function MangaList({ Mangas }: { Mangas: Signal<Manga[]> }) {
 	}
 
 	return (
-		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+		<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4 lg:gap-6">
 			{Mangas.value.map((manga) => MangaDisplay(manga))}
 		</div>
 	);

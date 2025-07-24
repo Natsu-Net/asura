@@ -1,6 +1,11 @@
 import { showChapterRead, showMangaDetails, readChapterList } from "../utils/manga.ts";
 import { IS_BROWSER } from "$fresh/runtime.ts";
 import type { Manga } from "../utils/manga.ts";
+import { signal } from "@preact/signals";
+
+// Chapter pagination state
+const chapterPage = signal(1);
+const chaptersPerPage = 12;
 
 // Format date with proper type handling
 const formatDate = (sdate: string | Date | undefined) => {
@@ -28,10 +33,21 @@ const getCurrentTimeZoneUTC = () => {
 };
 
 export default function MangaDetails() {
-	const r: Manga | null = showMangaDetails.value;
+	const r = showMangaDetails.value;
+
+	// Helper function to get unique chapter count
+	const getUniqueChapterCount = (chapters: any[]) => {
+		if (!chapters) return 0;
+		return new Set(chapters.map(ch => String(ch.number))).size;
+	};
+
+	// Reset chapter page when manga changes
+	if (r && chapterPage.value !== 1) {
+		chapterPage.value = 1;
+	}
 	let _hide = false;
 
-	const readChapter = (e: Event) => {
+	const readChapter = async (e: Event) => {
 		if (!IS_BROWSER) return;
 		e.preventDefault();
 		
@@ -61,7 +77,33 @@ export default function MangaDetails() {
 			return;
 		}
 
-		showChapterRead.value = chap;
+		try {
+			// Fetch chapter details with images
+			const response = await fetch(`/api/${r.slug}/chapter/${chap.number}`);
+			
+			if (!response.ok) {
+				throw new Error(`Failed to fetch chapter: ${response.status}`);
+			}
+			
+			const chapterDetails = await response.json();
+			console.log("Chapter details fetched:", chapterDetails);
+			
+			// Set the chapter with pages (images)
+			showChapterRead.value = {
+				...chap,
+				pages: chapterDetails.pages || chapterDetails || [],
+				images: chapterDetails.images || ""
+			};
+		} catch (error) {
+			console.error("Failed to fetch chapter details:", error);
+			// Fallback to basic chapter without images - this will trigger an error in ChapterReader
+			showChapterRead.value = {
+				...chap,
+				pages: [], // Empty array to prevent undefined errors
+				images: ""
+			};
+		}
+
 		if (!r?.slug) return;
 		if (!readChapterList.value[r.slug]) readChapterList.value[r.slug] = {};
 		readChapterList.value = {
@@ -188,45 +230,153 @@ export default function MangaDetails() {
 
 							{/* Chapters Section */}
 							<div>
-								<h4 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-									<i class="fa-solid fa-book-open text-blue-400"></i>
-									Chapters
-								</h4>
-								<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-									{r.chapters.map((chap) => {
-										if (!r?.slug) return null;
-										let read = false;
-										if (readChapterList.value) {
-											if (readChapterList.value[r.slug]?.[chap.number] === true) {
-												read = true;
-											}
-										}
-
-										return (
-											<div class="w-full">
-												<button 
-													type="button"
-													class={`w-full p-4 rounded-xl border transition-all duration-200 text-left hover:shadow-lg hover:-translate-y-1 ${
-														read 
-															? 'bg-gradient-to-r from-green-600 to-emerald-600 border-green-500 text-white' 
-															: 'bg-white bg-opacity-5 border-gray-700 text-white hover:border-blue-500'
-													}`}
-													data-chap={chap.number}
-													onClick={readChapter}
-												>
-													<div class="space-y-2">
-														<div class="flex justify-between items-center">
-															<span class="text-sm font-semibold text-blue-400">Ch. {chap.number}</span>
-															{read && <span class="text-white font-bold">✓</span>}
-														</div>
-														<h6 class="font-semibold leading-snug">{chap.title}</h6>
-														<p class="text-sm text-gray-400">{chap.date}</p>
-													</div>
-												</button>
+								<div class="flex justify-between items-center mb-6">
+									<h4 class="text-xl font-bold text-white">
+										Chapters ({(() => {
+											// Count unique chapters
+											const uniqueChapters = new Set(r.chapters.map(ch => String(ch.number)));
+											return uniqueChapters.size;
+										})()})
+									</h4>
+									{(() => {
+										const uniqueCount = new Set(r.chapters.map(ch => String(ch.number))).size;
+										return uniqueCount > chaptersPerPage ? (
+											<div class="flex items-center gap-2 text-gray-400 text-sm">
+												<span>
+													{(() => {
+														const uniqueCount = new Set(r.chapters.map(ch => String(ch.number))).size;
+														return `${Math.min((chapterPage.value - 1) * chaptersPerPage + 1, uniqueCount)} - ${Math.min(chapterPage.value * chaptersPerPage, uniqueCount)} of ${uniqueCount}`;
+													})()}
+												</span>
 											</div>
-										);
+										) : null;
+									})()}
+								</div>								<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+									{(() => {
+										// Deduplicate chapters by number, keeping the cleaner title
+										const chapterMap = new Map();
+										r.chapters.forEach(ch => {
+											const number = String(ch.number);
+											const existing = chapterMap.get(number);
+											
+											if (!existing) {
+												chapterMap.set(number, ch);
+											} else {
+												// Keep the chapter with the cleaner title
+												const newTitle = ch.title.trim();
+												const existingTitle = existing.title.trim();
+												
+												// Prefer shorter, standard "Chapter X" format
+												if (newTitle.length < existingTitle.length && newTitle.match(/^Chapter\s+[0-9]+$/i)) {
+													chapterMap.set(number, ch);
+												} else if (!existingTitle.match(/^Chapter\s+[0-9]+$/i) && newTitle.match(/^Chapter\s+[0-9]+$/i)) {
+													chapterMap.set(number, ch);
+												}
+											}
+										});
+										
+										return Array.from(chapterMap.values())
+											.slice((chapterPage.value - 1) * chaptersPerPage, chapterPage.value * chaptersPerPage);
+									})()
+										.map((chap) => {
+											if (!r?.slug) return null;
+											let read = false;
+											if (readChapterList.value) {
+												if (readChapterList.value[r.slug]?.[chap.number] === true) {
+													read = true;
+												}
+											}
+
+											return (
+												<div class="w-full">
+													<button 
+														type="button"
+														class={`w-full p-4 rounded-xl border transition-all duration-200 text-left hover:shadow-lg hover:-translate-y-1 ${
+															read 
+																? 'bg-gradient-to-r from-green-600 to-emerald-600 border-green-500 text-white' 
+																: 'bg-white bg-opacity-5 border-gray-700 text-white hover:border-blue-500'
+														}`}
+														data-chap={chap.number}
+														onClick={readChapter}
+													>
+														<div class="space-y-2">
+															<div class="flex justify-between items-center">
+																<span class="text-sm font-semibold text-blue-400">Ch. {chap.number}</span>
+																{read && <span class="text-white font-bold">✓</span>}
+															</div>
+															<h6 class="font-semibold leading-snug">{chap.title}</h6>
+															<p class="text-sm text-gray-400">{chap.date}</p>
+														</div>
+													</button>
+												</div>
+											);
 									})}
 								</div>
+								
+								{/* Chapter Pagination */}
+								{r.chapters.length > chaptersPerPage && (
+									<div class="flex justify-center mt-8">
+										<div class="flex items-center space-x-2">
+											<button 
+												type="button"
+												class={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+													chapterPage.value === 1 
+														? 'text-gray-500 cursor-not-allowed' 
+														: 'text-white hover:bg-white hover:bg-opacity-10'
+												}`}
+												disabled={chapterPage.value === 1}
+												onClick={() => chapterPage.value = Math.max(1, chapterPage.value - 1)}
+											>
+												<i class="fa-solid fa-chevron-left"></i>
+											</button>
+											
+											{Array.from({ length: Math.ceil(r.chapters.length / chaptersPerPage) }, (_, i) => i + 1)
+												.filter(page => {
+													const totalPages = Math.ceil(r.chapters.length / chaptersPerPage);
+													if (totalPages <= 7) return true;
+													if (page === 1 || page === totalPages) return true;
+													if (page >= chapterPage.value - 2 && page <= chapterPage.value + 2) return true;
+													return false;
+												})
+												.map((page, index, filteredPages) => {
+													const prevPage = filteredPages[index - 1];
+													const showEllipsis = prevPage && page - prevPage > 1;
+													
+													return (
+														<>
+															{showEllipsis && (
+																<span class="px-2 py-2 text-gray-400">...</span>
+															)}
+															<button
+																type="button"
+																class={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+																	chapterPage.value === page
+																		? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
+																		: 'text-white hover:bg-white hover:bg-opacity-10'
+																}`}
+																onClick={() => chapterPage.value = page}
+															>
+																{page}
+															</button>
+														</>
+													);
+												})}
+											
+											<button 
+												type="button"
+												class={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+													chapterPage.value === Math.ceil(r.chapters.length / chaptersPerPage)
+														? 'text-gray-500 cursor-not-allowed' 
+														: 'text-white hover:bg-white hover:bg-opacity-10'
+												}`}
+												disabled={chapterPage.value === Math.ceil(r.chapters.length / chaptersPerPage)}
+												onClick={() => chapterPage.value = Math.min(Math.ceil(r.chapters.length / chaptersPerPage), chapterPage.value + 1)}
+											>
+												<i class="fa-solid fa-chevron-right"></i>
+											</button>
+										</div>
+									</div>
+								)}
 							</div>
 						</div>
 					</div>

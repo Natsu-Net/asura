@@ -108,33 +108,35 @@ export default function Pagination({ PaginationData,currentPage,MangaListData }:
 	return (
 		<>
 			<nav class="flex justify-center">
-				<div class="flex items-center space-x-1">
+				<div class="flex items-center space-x-1 sm:space-x-2">
 					{pages.map((page) => {
 						if (page === -1) {
 							return (
 								<button 
 									type="button"
-									class="px-3 py-2 text-gray-400 hover:text-white hover:bg-white hover:bg-opacity-10 rounded-lg transition-all duration-200 cursor-pointer"
+									class="px-2 sm:px-3 py-2 text-gray-400 hover:text-white hover:bg-white hover:bg-opacity-10 rounded-lg transition-all duration-200 cursor-pointer text-sm sm:text-base"
 									onClick={() => changePage(page)}
 								>
-									<span aria-hidden="true">‹ Previous</span>
+									<span aria-hidden="true" class="hidden sm:inline">‹ Previous</span>
+									<span aria-hidden="true" class="sm:hidden">‹</span>
 								</button>
 							);
 						} else if (page === -2) {
 							return (
 								<button 
 									type="button"
-									class="px-3 py-2 text-gray-400 hover:text-white hover:bg-white hover:bg-opacity-10 rounded-lg transition-all duration-200 cursor-pointer"
+									class="px-2 sm:px-3 py-2 text-gray-400 hover:text-white hover:bg-white hover:bg-opacity-10 rounded-lg transition-all duration-200 cursor-pointer text-sm sm:text-base"
 									onClick={() => changePage(page)}
 								>
-									<span aria-hidden="true">Next ›</span>
+									<span aria-hidden="true" class="hidden sm:inline">Next ›</span>
+									<span aria-hidden="true" class="sm:hidden">›</span>
 								</button>
 							);
 						} else if (page == currentPage.value) {
 							return (
 								<button 
 									type="button"
-									class="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-semibold shadow-lg cursor-pointer"
+									class="px-3 sm:px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-semibold shadow-lg cursor-pointer text-sm sm:text-base"
 									onClick={() => changePage(page)}
 								>
 									{page}
@@ -144,7 +146,7 @@ export default function Pagination({ PaginationData,currentPage,MangaListData }:
 							return (
 								<button 
 									type="button"
-									class="px-4 py-2 text-gray-400 hover:text-white hover:bg-white hover:bg-opacity-10 rounded-lg transition-all duration-200 cursor-pointer"
+									class="px-3 sm:px-4 py-2 text-gray-400 hover:text-white hover:bg-white hover:bg-opacity-10 rounded-lg transition-all duration-200 cursor-pointer text-sm sm:text-base"
 									onClick={() => changePage(page)}
 								>
 									{page}
