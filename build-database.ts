@@ -154,6 +154,5 @@ await cleanDatabase();
 export {
 	checkForNewDomains,
 	main,
-	cleanDatabase,
-	getChapter
+	cleanDatabase
 };
