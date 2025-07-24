@@ -12,7 +12,7 @@ import twindPlugin from "$fresh/plugins/twind.ts";
 import twindConfig from "./twind.config.ts";
 
 // Import database functions
-import { checkForNewDomains, main as updateDatabase, cleanDatabase } from "./build-database.ts";
+import { checkForNewDomains, main as updateDatabase, cleanDatabase, migrateToCleanSlugs } from "./build-database.ts";
 
 // Schedule database update to run every 30 minutes
 Deno.cron("Update manga database", "*/30 * * * *", async () => {
@@ -42,7 +42,9 @@ Deno.cron("Weekly database cleanup", "0 2 * * SUN", async () => {
 	try {
 		console.log("Starting weekly database cleanup...");
 		await cleanDatabase();
-		console.log("Weekly database cleanup completed");
+		console.log("Starting slug migration to clean format...");
+		await migrateToCleanSlugs();
+		console.log("Weekly database cleanup and migration completed");
 	} catch (error) {
 		console.error("Weekly database cleanup failed:", error);
 	}

@@ -11,7 +11,16 @@ export default class AsuraParser {
 
 	public getSlugFromUrl(url: string) {
 		const split = url.split("/").filter((s) => s !== "");
-		const slug = split[split.length - 1].replace(/^[0-9]+-/, "").replace(/-+$/, "");
+		let slug = split[split.length - 1];
+		
+		// Remove numeric prefixes (e.g., "123-title" -> "title")
+		slug = slug.replace(/^[0-9]+-/, "");
+		
+		// Remove hash suffixes (e.g., "title-abc123def" -> "title")
+		slug = slug.replace(/-[a-f0-9]{8,}$/i, "");
+		
+		// Clean up trailing dashes
+		slug = slug.replace(/-+$/, "");
 
 		return slug;
 	}
@@ -77,8 +86,11 @@ export default class AsuraParser {
 					}
 					
 					const url = `${this.domain}${href}`;
+					// Use clean slug generation - prefer title-based slug over URL-based
 					let slug = this.getSlugFromTitle(mangaSlug);
-					if (this.getSlugFromUrl(url) !== slug) {
+					
+					// Only use URL-based slug if title-based fails
+					if (!slug || slug.length < 3) {
 						slug = this.getSlugFromUrl(url);
 					}
 

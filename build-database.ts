@@ -5,6 +5,88 @@ import { Manga, Chapter } from "./utils/manga.ts";
 import { storeManga, getMangaBySlug } from "./utils/fetcher.ts";
 import { openKv } from "./utils/kv.ts";
 
+// Migration function to clean up slugs
+export async function migrateToCleanSlugs() {
+	console.log("🔄 Starting slug migration to clean format...");
+	const kv = await openKv();
+	
+	try {
+		// Get all manga slugs from index
+		const mangaIndexResult = await kv.get(["manga_index"]);
+		const mangaSlugs = (mangaIndexResult.value as string[]) || [];
+		
+		const parser = new AsuraParser();
+		const migratedSlugs: string[] = [];
+		
+		for (const oldSlug of mangaSlugs) {
+			// Check if this slug has a hash suffix
+			if (/-[a-f0-9]{8,}$/i.test(oldSlug)) {
+				console.log(`Migrating slug: ${oldSlug}`);
+				
+				// Get the manga data
+				const detailsResult = await kv.get(["manga_details", oldSlug]);
+				const chaptersResult = await kv.get(["manga_chapters", oldSlug]);
+				
+				if (detailsResult.value && chaptersResult.value) {
+					const mangaDetails = detailsResult.value as Manga;
+					const mangaChapters = chaptersResult.value as Chapter[];
+					
+					// Generate clean slug
+					let cleanSlug = parser.getSlugFromTitle(mangaDetails.originalSlug || mangaDetails.title);
+					if (!cleanSlug || cleanSlug.length < 3) {
+						cleanSlug = parser.getSlugFromUrl(`/series/${oldSlug}`);
+					}
+					
+					// Only migrate if the clean slug is different
+					if (cleanSlug !== oldSlug) {
+						console.log(`  ${oldSlug} -> ${cleanSlug}`);
+						
+						// Check if clean slug already exists
+						const existingResult = await kv.get(["manga_details", cleanSlug]);
+						if (!existingResult.value) {
+							// Migrate the data
+							mangaDetails.slug = cleanSlug;
+							await kv.set(["manga_details", cleanSlug], mangaDetails);
+							await kv.set(["manga_chapters", cleanSlug], mangaChapters);
+							
+							// Migrate chapter content
+							for (const chapter of mangaChapters) {
+								const chapterContentResult = await kv.get(["chapter_content", oldSlug, chapter.number]);
+								if (chapterContentResult.value) {
+									await kv.set(["chapter_content", cleanSlug, chapter.number], chapterContentResult.value);
+									await kv.delete(["chapter_content", oldSlug, chapter.number]);
+								}
+							}
+							
+							// Delete old entries
+							await kv.delete(["manga_details", oldSlug]);
+							await kv.delete(["manga_chapters", oldSlug]);
+							
+							migratedSlugs.push(cleanSlug);
+						} else {
+							console.log(`  Clean slug ${cleanSlug} already exists, skipping migration`);
+							migratedSlugs.push(oldSlug); // Keep the old one
+						}
+					} else {
+						migratedSlugs.push(oldSlug); // No change needed
+					}
+				}
+			} else {
+				migratedSlugs.push(oldSlug); // Already clean
+			}
+		}
+		
+		// Update the manga index with migrated slugs
+		await kv.set(["manga_index"], migratedSlugs);
+		console.log(`✅ Slug migration completed. Processed ${mangaSlugs.length} manga, migrated to clean slugs.`);
+		
+	} catch (error) {
+		console.error("❌ Slug migration failed:", error);
+	} finally {
+		kv.close();
+	}
+}
+
 // Load environment variables
 try {
   await load({
