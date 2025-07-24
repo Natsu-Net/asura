@@ -7,7 +7,8 @@
     "build": "deno run -A dev.ts build",
     "preview": "deno run -A main.ts",
     "build-database": "deno run -A build-database.ts",
-    "test-kv": "deno run -A test-kv.ts"
+    "test-kv": "deno run -A test-kv.ts",
+    "test-basic": "deno run -A test-basic.ts"
   },
   "imports": {
     "$fresh/": "https://deno.land/x/fresh@1.7.3/",

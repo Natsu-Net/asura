@@ -3,13 +3,13 @@ import { IS_BROWSER } from "$fresh/runtime.ts";
 
 interface Manga {
 	[x: string]: unknown;
-	_id: string;
+	_id?: string;
 	Artist: string;
 	title: string;
 	slug: string;
 	url: string;
-	originalSlug: string;
-	chapterNum: string;
+	originalSlug?: string;
+	chapterNum?: string;
 	genres: string[];
 
 	sypnosis: string;
@@ -17,29 +17,29 @@ interface Manga {
 
 	chapters: Chapter[];
 	// deno-lint-ignore no-explicit-any
-	parseChapters: () => Promise<any>;
+	parseChapters?: () => Promise<any>;
 
-	Updated_On: string;
-	Posted_On: string;
-	Posted_By: string;
+	Updated_On: string | Date;
+	Posted_On?: string | Date;
+	Posted_By?: string;
 
 	Author: string;
-	Released: string;
-	Serialization: string;
+	Released?: string;
+	Serialization?: string;
 	Status: string;
 
-	Type: string;
+	Type?: string;
 	Rating: number;
 	Followers: number;
 }
 
 interface Chapter {
 	_id?: string;
-	images: string;
+	images?: string;
 	title: string;
 	url: string;
 	date: string;
-	number: number;
+	number: string | number;
 	pages: string[] | string;
 }
 
