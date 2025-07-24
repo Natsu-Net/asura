@@ -7,7 +7,7 @@ const parser = new AsuraParser();
 
 async function main() {
 	console.log("Starting database update for:", parser.domain);
-	const kv = await Deno.openKv();
+	const kv = await Deno.openKv("https://api.deno.com/databases/82c53b38-af0e-4fa6-9009-ec428bfab4a3/connect");
 
 	for await (const manga of parser.getMangaList()) {
 		console.log("Processing:", manga.title);
@@ -92,7 +92,7 @@ async function main() {
 }
 
 async function checkForNewDomains() {
-	const kv = await Deno.openKv();
+	const kv = await Deno.openKv("https://api.deno.com/databases/82c53b38-af0e-4fa6-9009-ec428bfab4a3/connect");
 	
 	// Get stored domain configuration
 	const domainConfig = await kv.get(["config", "domain"]);
@@ -135,7 +135,7 @@ async function checkForNewDomains() {
 
 // Helper function to get chapter by manga slug and chapter number
 async function getChapter(mangaSlug: string, chapterNumber: string) {
-	const kv = await Deno.openKv();
+	const kv = await Deno.openKv("https://api.deno.com/databases/82c53b38-af0e-4fa6-9009-ec428bfab4a3/connect");
 	const result = await kv.get(["chapters", mangaSlug, chapterNumber]);
 	kv.close();
 	return result.value;
@@ -144,7 +144,7 @@ async function getChapter(mangaSlug: string, chapterNumber: string) {
 // Helper function to clean duplicates (simplified version)
 async function cleanDatabase() {
 	console.log("Cleaning database...");
-	const kv = await Deno.openKv();
+	const kv = await Deno.openKv("https://api.deno.com/databases/82c53b38-af0e-4fa6-9009-ec428bfab4a3/connect");
 	const seen = new Set<string>();
 	const toDelete: string[] = [];
 	

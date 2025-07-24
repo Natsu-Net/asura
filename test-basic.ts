@@ -4,7 +4,7 @@ async function testBasicFunctionality() {
 	
 	// Test Deno KV basic functionality
 	try {
-		const kv = await Deno.openKv();
+		const kv = await Deno.openKv("https://api.deno.com/databases/82c53b38-af0e-4fa6-9009-ec428bfab4a3/connect");
 		
 		// Test basic KV operations
 		await kv.set(["test"], "value");
