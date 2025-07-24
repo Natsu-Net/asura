@@ -29,6 +29,9 @@
     "tailwindcss": "npm:tailwindcss@3.4.1",
     "tailwindcss/": "npm:/tailwindcss@3.4.1/",
     "tailwindcss/plugin": "npm:/tailwindcss@3.4.1/plugin.js",
+    "twind": "https://esm.sh/twind@0.16.19",
+    "twind/": "https://esm.sh/twind@0.16.19/",
+    "twind/sheets": "https://esm.sh/twind@0.16.19/sheets",
     "$std/": "https://deno.land/std@0.216.0/"
   },
   "compilerOptions": {
