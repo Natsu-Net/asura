@@ -5,14 +5,17 @@
 import * as $_app from "./routes/_app.tsx";
 import * as $api_slug_chapter_chapter_index from "./routes/api/[slug]/chapter/[chapter]/index.ts";
 import * as $api_slug_index from "./routes/api/[slug]/index.ts";
+import * as $api_cron_update_database from "./routes/api/cron/update-database.ts";
+import * as $api_docs from "./routes/api/docs.ts";
 import * as $api_image from "./routes/api/image.ts";
 import * as $api_index from "./routes/api/index.ts";
+import * as $api_status from "./routes/api/status.ts";
 import * as $index from "./routes/index.tsx";
 import * as $ChapterRead from "./islands/ChapterRead.tsx";
 import * as $MangaDetails from "./islands/MangaDetails.tsx";
 import * as $MangaList from "./islands/MangaList.tsx";
 import * as $Pagination from "./islands/Pagination.tsx";
-import { type Manifest } from "$fresh/server.ts";
+import type { Manifest } from "$fresh/server.ts";
 
 const manifest = {
   routes: {
@@ -20,8 +23,11 @@ const manifest = {
     "./routes/api/[slug]/chapter/[chapter]/index.ts":
       $api_slug_chapter_chapter_index,
     "./routes/api/[slug]/index.ts": $api_slug_index,
+    "./routes/api/cron/update-database.ts": $api_cron_update_database,
+    "./routes/api/docs.ts": $api_docs,
     "./routes/api/image.ts": $api_image,
     "./routes/api/index.ts": $api_index,
+    "./routes/api/status.ts": $api_status,
     "./routes/index.tsx": $index,
   },
   islands: {

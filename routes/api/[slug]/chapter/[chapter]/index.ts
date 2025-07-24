@@ -1,62 +1,30 @@
 import { HandlerContext } from "$fresh/server.ts";
-
-// Jokes courtesy of https://punsandoneliners.com/randomness/programmer-jokes/
 import { Manga } from "../../../../../utils/manga.ts";
-import { MongoClient,ObjectId } from "npm:mongodb";
-const client = await (new MongoClient(Deno.env.get("MONGO_URI") ?? "")).connect();
-
-const db = client.db("asura");
-
-const dbManga = db.collection("manga");
-
-const dbChapters = db.collection("chapters");
+import { getMangaBySlug } from "../../../../../utils/fetcher.ts";
+import { getChapter } from "../../../../../build-database.ts";
 
 export const handler = async (_req: Request, _ctx: HandlerContext): Promise<Response> => {
 	const slug = _ctx.params.slug;
-	const chapter = Number(_ctx.params.chapter);
+	const chapterParam = _ctx.params.chapter;
+	
 	// check if slug & chapter is empty
-	if (!slug || !chapter) {
+	if (!slug || !chapterParam) {
 		return new Response("Manga not found", { status: 404 });
 	}
 
-	const manga = (await dbManga.findOne({
-    slug,
-  })) as unknown as Manga;
+	const manga = await getMangaBySlug(slug);
 	
 	// check if manga is empty
 	if (!manga) {
 		return new Response("Manga not found", { status: 404 });
 	}
-	if (isNaN(chapter)) {
-		// check if we can find the chapter by id instead
-		const C_chapter = await dbChapters.findOne({
-			_id: new ObjectId(_ctx.params.chapter),
-		});
 
-		if (!C_chapter) return new Response("Chapter not found", { status: 404 });
-	}
-	
-	const chapters = manga.chapters;
-	let res = null;
+	// Get chapter from KV store
+	const chapter = await getChapter(slug, chapterParam);
 
-
-	res =
-		res ??
-		(await dbChapters.findOne(
-			{
-				mangaId: manga._id,
-				number: chapter,
-			},
-			{
-				sort: {
-					number: 1,
-				},
-			},
-		));
-
-	if (chapter > chapters.length || chapter < 0 || !res) {
+	if (!chapter) {
 		return new Response("Chapter not found", { status: 404 });
 	}
 
-	return new Response(JSON.stringify(res));
+	return new Response(JSON.stringify(chapter));
 };

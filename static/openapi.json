@@ -1,0 +1,454 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Asura Manga API",
+    "description": "API for accessing manga data from AsuraComics, including manga details, chapters, and images",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Asura API Support",
+      "url": "https://github.com/Natsu-Net/asura"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://your-deploy-url.deno.dev/api",
+      "description": "Production server"
+    },
+    {
+      "url": "http://localhost:8000/api",
+      "description": "Development server"
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "Get paginated list of manga",
+        "description": "Retrieve a paginated list of manga with optional search and genre filtering",
+        "tags": ["Manga"],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number for pagination",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Search term to filter manga by title",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "genres",
+            "in": "query",
+            "description": "Comma-separated list of genres to filter by",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MangaListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{slug}": {
+      "get": {
+        "summary": "Get manga details",
+        "description": "Retrieve detailed information about a specific manga",
+        "tags": ["Manga"],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "description": "Unique identifier for the manga",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "includeChapters",
+            "in": "query",
+            "description": "Whether to include chapter list in response",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Manga"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Manga not found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Manga not found"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{slug}/chapter/{chapter}": {
+      "get": {
+        "summary": "Get chapter details",
+        "description": "Retrieve detailed information about a specific chapter including page images",
+        "tags": ["Chapters"],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "description": "Unique identifier for the manga",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "chapter",
+            "in": "path",
+            "description": "Chapter number",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChapterDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Chapter not found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Chapter not found"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/status": {
+      "get": {
+        "summary": "Get API status",
+        "description": "Retrieve API status information including last database update",
+        "tags": ["System"],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Manga": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Title of the manga"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Unique identifier for the manga"
+          },
+          "imgUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL of the manga cover image"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Original URL on AsuraComics"
+          },
+          "genres": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of genres"
+          },
+          "sypnosis": {
+            "type": "string",
+            "description": "Synopsis/description of the manga"
+          },
+          "Rating": {
+            "type": "number",
+            "description": "Rating score"
+          },
+          "Followers": {
+            "type": "integer",
+            "description": "Number of followers"
+          },
+          "Status": {
+            "type": "string",
+            "description": "Publication status"
+          },
+          "Author": {
+            "type": "string",
+            "description": "Author name"
+          },
+          "Artist": {
+            "type": "string",
+            "description": "Artist name"
+          },
+          "Posted_On": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date when manga was first posted"
+          },
+          "Updated_On": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date when manga was last updated"
+          },
+          "Posted_By": {
+            "type": "string",
+            "description": "User who posted the manga"
+          },
+          "Released": {
+            "type": "string",
+            "description": "Release year"
+          },
+          "Serialization": {
+            "type": "string",
+            "description": "Serialization information"
+          },
+          "chapters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Chapter"
+            },
+            "description": "List of chapters (included when includeChapters=true)"
+          }
+        },
+        "required": ["title", "slug", "url"]
+      },
+      "Chapter": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Chapter title"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Original chapter URL"
+          },
+          "date": {
+            "type": "string",
+            "description": "Chapter release date"
+          },
+          "number": {
+            "type": "string",
+            "description": "Chapter number"
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            },
+            "description": "List of page image URLs"
+          }
+        },
+        "required": ["title", "url", "number"]
+      },
+      "ChapterDetails": {
+        "type": "object",
+        "properties": {
+          "mangaSlug": {
+            "type": "string",
+            "description": "Slug of the parent manga"
+          },
+          "title": {
+            "type": "string",
+            "description": "Chapter title"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Original chapter URL"
+          },
+          "date": {
+            "type": "string",
+            "description": "Chapter release date"
+          },
+          "number": {
+            "type": "string",
+            "description": "Chapter number"
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            },
+            "description": "List of page image URLs"
+          }
+        },
+        "required": ["mangaSlug", "title", "url", "number", "images"]
+      },
+      "MangaListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Manga"
+            },
+            "description": "Array of manga objects"
+          },
+          "total": {
+            "type": "integer",
+            "description": "Total number of manga available"
+          },
+          "page": {
+            "type": "integer",
+            "description": "Current page number"
+          },
+          "pagesLeft": {
+            "type": "integer",
+            "description": "Number of pages remaining"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Number of items per page"
+          }
+        },
+        "required": ["data", "total", "page", "pagesLeft", "limit"]
+      },
+      "StatusResponse": {
+        "type": "object",
+        "properties": {
+          "lastUpdate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "ISO timestamp of last database update"
+          },
+          "lastUpdateFormatted": {
+            "type": "string",
+            "nullable": true,
+            "description": "Human-readable format of last update"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["operational", "error"],
+            "description": "Current API status"
+          },
+          "version": {
+            "type": "string",
+            "description": "API version"
+          },
+          "uptime": {
+            "type": "number",
+            "description": "Server uptime in milliseconds"
+          }
+        },
+        "required": ["status", "version", "uptime"]
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Error message"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["error"],
+            "description": "Error status"
+          },
+          "version": {
+            "type": "string",
+            "description": "API version"
+          }
+        },
+        "required": ["error", "status", "version"]
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Manga",
+      "description": "Operations related to manga"
+    },
+    {
+      "name": "Chapters",
+      "description": "Operations related to chapters"
+    },
+    {
+      "name": "System",
+      "description": "System status and information"
+    }
+  ]
+}

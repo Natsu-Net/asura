@@ -52,74 +52,8 @@ export const handler: Handlers<MangaData | null> = {
 		}
 
 		if (!IS_BROWSER) {
-			const MongoClient = (await import("npm:mongodb")).MongoClient;
-			const client = await new MongoClient(Deno.env.get("MONGO_URI") ?? "").connect();
-
-			const db = client.db("asura");
-
-			const dbManga = db.collection("manga");
-
-			const searchParams = new URL(url).searchParams;
-
-			const page = parseInt(searchParams.get("page") ?? "1");
-			const search = searchParams.get("search") ?? "";
-			const genres = searchParams.get("genres") ?? "";
-
-			const genreSplit = genres?.split(",");
-
-			let limit = parseInt(searchParams.get("limit") ?? "10");
-
-			if (isNaN(page) || isNaN(limit)) {
-				return new Response("Invalid page or limit", { status: 400 });
-			}
-
-			if (limit > 25) {
-				limit = 25;
-			}
-
-			const start = page - 1 < 0 ? 0 : page == 1 ? 0 : (page - 1) * limit;
-
-			// deno-lint-ignore no-explicit-any
-			const Query: any = {};
-
-			if (search) {
-				if (!Query.$and) {
-					Query.$and = [];
-				}
-				Query.$and.push({ title: { $regex: search, $options: "i" } });
-			}
-			if (genreSplit && genreSplit.length > 0 && genreSplit[0] != "") {
-				if (!Query.$and) {
-					Query.$and = [];
-				}
-				Query.$and.push({ genres: { $in: genreSplit } });
-			}
-
-			const count = await dbManga.countDocuments(Query);
-
-			const sdata = (await dbManga
-				.find(Query)
-				.sort({
-					Updated_On: -1,
-				})
-				.skip(start)
-				.limit(limit)
-				.toArray()) as unknown as Manga[];
-
-			const r = {
-				data: sdata.map((manga: Manga) => {
-					manga.chapters.map((chapter) => {
-						chapter.pages = Deno.env.get("APP_URL") + "/api/" + manga.slug + "/chapter/" + chapter.number;
-						return chapter;
-					});
-					return manga;
-				}),
-				total: count,
-				page: page,
-				pagesLeft: Math.ceil(count / limit) - page,
-				limit: limit ?? "10",
-			};
-
+			const { ServerFetcher } = await import("../utils/fetcher.ts");
+			const r = await ServerFetcher(url.toString());
 			return ctx.render(r);
 		} else {
 			const data = await fetch(url).then((res) => res.json());
@@ -142,7 +76,7 @@ export default function Home({ data }: { data: MangaData }) {
 
 	currentPage.value = data.page;
 
-	const lastUpdate = data.data[0].Updated_On;
+	const lastUpdate = data.data && data.data.length > 0 ? data.data[0].Updated_On : null;
 
 	MangaListData.value = data.data;
 
@@ -181,7 +115,7 @@ export default function Home({ data }: { data: MangaData }) {
 								</a>
 							</h1>
 							<p>
-								Last updated: {formatDate(lastUpdate)} {getCurrentTimeZoneUTC()}. from asura.gg
+								Last updated: {lastUpdate ? formatDate(lastUpdate instanceof Date ? lastUpdate.toISOString() : lastUpdate.toString()) : 'No data'} {getCurrentTimeZoneUTC()}. from asura.gg
 							</p>
 							<p>Totals : {data.total}</p>
 							<div class="row">
