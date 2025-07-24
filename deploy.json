@@ -1,0 +1,24 @@
+{
+  "name": "asura-manga-api",
+  "description": "Manga API with automatic database updates via cron jobs",
+  "entrypoint": "main.ts",
+  "env": {
+    "DENO_ENV": "production"
+  },
+  "unstable": [
+    "kv",
+    "cron"
+  ],
+  "cron": [
+    {
+      "name": "Update manga database",
+      "schedule": "0 */ * * *",
+      "timezone": "UTC"
+    },
+    {
+      "name": "Weekly database cleanup", 
+      "schedule": "0 2 * * 0",
+      "timezone": "UTC"
+    }
+  ]
+}

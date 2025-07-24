@@ -1,3 +1,4 @@
+/// <reference lib="deno.unstable" />
 import { HandlerContext } from "$fresh/server.ts";
 
 export const handler = async (_req: Request, _ctx: HandlerContext): Promise<Response> => {

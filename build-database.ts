@@ -1,5 +1,6 @@
+/// <reference lib="deno.unstable" />
 import AsuraParser from "./parser/sites/asura.ts";
-import { Chapter, Manga } from "./utils/manga.ts";
+import { Manga } from "./utils/manga.ts";
 import { storeManga, getMangaBySlug } from "./utils/fetcher.ts";
 
 const parser = new AsuraParser();
@@ -28,26 +29,33 @@ async function main() {
 			// Check for new chapters
 			if (manga.chapters.length > existingManga.chapters.length) {
 				console.log(`Found new chapters for ${manga.title}`);
-				const chap = await manga.parseChapters();
-				updatedManga.chapters = chap.chapters;
-				
-				// Store individual chapters
-				for (const chapter of chap.chapters) {
-					await kv.set(["chapters", manga.slug, chapter.number], {
-						mangaSlug: manga.slug,
-						images: chapter.pages,
-						title: chapter.title,
-						url: chapter.url,
-						date: chapter.date,
-						number: chapter.number,
-					});
+				if (manga.parseChapters) {
+					const chap = await manga.parseChapters();
+					updatedManga.chapters = chap.chapters;
+					
+					// Store individual chapters
+					for (const chapter of chap.chapters) {
+						await kv.set(["chapters", manga.slug, chapter.number], {
+							mangaSlug: manga.slug,
+							images: chapter.pages,
+							title: chapter.title,
+							url: chapter.url,
+							date: chapter.date,
+							number: chapter.number,
+						});
+					}
 				}
 			}
+
+			// Remove parseChapters function before storing
+			delete manga.parseChapters;
+			delete updatedManga.parseChapters;
 
 			await storeManga(updatedManga);
 			console.log(`Updated ${manga.title}`);
 		} else {
-			// New manga
+		// New manga
+		if (manga.parseChapters) {
 			const chap = await manga.parseChapters();
 			manga.chapters = chap.chapters;
 			
@@ -62,12 +70,24 @@ async function main() {
 					number: chapter.number,
 				});
 			}
+		} else {
+			manga.chapters = [];
+		}
 
-			await storeManga(manga);
-			console.log(`Inserted ${manga.title} with ${manga.chapters.length} chapters`);
+		// Remove the parseChapters function before storing
+		delete manga.parseChapters;
+		
+		await storeManga(manga);
+		console.log(`Inserted ${manga.title} with ${manga.chapters.length} chapters`);
 		}
 	}
 
+	// Store the last update timestamp
+	const now = new Date();
+	await kv.set(["config", "lastUpdate"], now.toISOString());
+	console.log(`Last update timestamp stored: ${now.toISOString()}`);
+	
+	kv.close();
 	console.log("Finished updating database");
 }
 
@@ -109,12 +129,15 @@ async function checkForNewDomains() {
 	} catch (error) {
 		console.log("Error checking domain:", error);
 	}
+	
+	kv.close();
 }
 
 // Helper function to get chapter by manga slug and chapter number
-export async function getChapter(mangaSlug: string, chapterNumber: string) {
+async function getChapter(mangaSlug: string, chapterNumber: string) {
 	const kv = await Deno.openKv();
 	const result = await kv.get(["chapters", mangaSlug, chapterNumber]);
+	kv.close();
 	return result.value;
 }
 
@@ -144,15 +167,20 @@ async function cleanDatabase() {
 		console.log(`Deleted duplicate manga: ${slug}`);
 	}
 	
+	kv.close();
 	console.log("Finished cleaning database");
 }
 
-await checkForNewDomains();
-await main();
-await cleanDatabase();
+// Only run main logic when file is executed directly (not imported)
+if (import.meta.main) {
+	await checkForNewDomains();
+	await main();
+	await cleanDatabase();
+}
 
 export {
 	checkForNewDomains,
 	main,
-	cleanDatabase
+	cleanDatabase,
+	getChapter
 };

@@ -76,7 +76,7 @@ export default function Home({ data }: { data: MangaData }) {
 
 	currentPage.value = data.page;
 
-	const lastUpdate = data.data[0].Updated_On;
+	const lastUpdate = data.data && data.data.length > 0 ? data.data[0].Updated_On : null;
 
 	MangaListData.value = data.data;
 
@@ -115,7 +115,7 @@ export default function Home({ data }: { data: MangaData }) {
 								</a>
 							</h1>
 							<p>
-								Last updated: {formatDate(lastUpdate)} {getCurrentTimeZoneUTC()}. from asura.gg
+								Last updated: {lastUpdate ? formatDate(lastUpdate instanceof Date ? lastUpdate.toISOString() : lastUpdate.toString()) : 'No data'} {getCurrentTimeZoneUTC()}. from asura.gg
 							</p>
 							<p>Totals : {data.total}</p>
 							<div class="row">

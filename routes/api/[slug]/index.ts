@@ -1,6 +1,8 @@
 
+/// <reference lib="deno.unstable" />
+
 import { FreshContext } from "$fresh/server.ts";
-import { Manga } from "../../../utils/manga.ts";
+import { Manga, Chapter } from "../../../utils/manga.ts";
 import { getMangaBySlug } from "../../../utils/fetcher.ts";
 
 export const handler = async (_req: Request, _ctx: FreshContext): Promise<Response> => {
@@ -19,19 +21,16 @@ export const handler = async (_req: Request, _ctx: FreshContext): Promise<Respon
 		return new Response("Manga not found", { status: 404 });
 	}
 
-	// If includeChapters is true, get chapters from KV
+	// If includeChapters is true, chapters are already in the manga object
 	if (includeChapters) {
-		const kv = await Deno.openKv();
-		const chapters = [];
-		const iter = kv.list({ prefix: ["chapters", slug] });
-		
-		for await (const entry of iter) {
-			chapters.push(entry.value);
+		// Chapters are already stored in the manga object, just ensure they're sorted
+		if (manga.chapters && Array.isArray(manga.chapters)) {
+			manga.chapters.sort((a: Chapter, b: Chapter) => {
+				const aNum = typeof a.number === 'string' ? parseFloat(a.number) : a.number;
+				const bNum = typeof b.number === 'string' ? parseFloat(b.number) : b.number;
+				return bNum - aNum;
+			});
 		}
-		
-		// Sort chapters by number in descending order
-		chapters.sort((a: any, b: any) => b.number - a.number);
-		manga.chapters = chapters;
 	}
 
 	console.log(`Took ${Date.now() - startTime}ms to fetch ${manga.slug} with chapters`);

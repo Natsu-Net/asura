@@ -1,3 +1,4 @@
+/// <reference lib="deno.unstable" />
 import type { Manga } from "./manga.ts";
 
 interface Genre {
@@ -15,6 +16,10 @@ interface MangaData {
 
 // Helper function to filter manga based on search and genres
 function filterManga(manga: Manga, search: string, genreSplit: string[]): boolean {
+	if (!manga || !manga.title) {
+		return false;
+	}
+	
 	let matches = true;
 	
 	if (search && !manga.title.toLowerCase().includes(search.toLowerCase())) {
@@ -91,6 +96,7 @@ export async function ServerFetcher(url: string) {
 		limit: limit,
 	};
 
+	kv.close();
 	return r as MangaData;
 }
 
@@ -98,12 +104,14 @@ export async function ServerFetcher(url: string) {
 export async function storeManga(manga: Manga) {
 	const kv = await Deno.openKv();
 	await kv.set(["manga", manga.slug], manga);
+	kv.close();
 }
 
 // Helper function to get manga by slug
 export async function getMangaBySlug(slug: string): Promise<Manga | null> {
 	const kv = await Deno.openKv();
 	const result = await kv.get(["manga", slug]);
+	kv.close();
 	return result.value as Manga | null;
 }
 
@@ -120,5 +128,21 @@ export async function getAllMangaSlugs(): Promise<string[]> {
 		}
 	}
 	
+	kv.close();
 	return slugs;
+}
+
+// Helper function to get the last update timestamp
+export async function getLastUpdateDate(): Promise<string | null> {
+	const kv = await Deno.openKv();
+	const result = await kv.get(["config", "lastUpdate"]);
+	kv.close();
+	return result.value as string | null;
+}
+
+// Helper function to set the last update timestamp
+export async function setLastUpdateDate(date: string) {
+	const kv = await Deno.openKv();
+	await kv.set(["config", "lastUpdate"], date);
+	kv.close();
 }
