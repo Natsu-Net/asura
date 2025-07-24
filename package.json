@@ -1,7 +1,0 @@
-{
-  "dependencies": {
-    "bson": "^6.4.0",
-    "mongodb": "6.4"
-  },
-  "type": "module"
-}

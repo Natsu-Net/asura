@@ -1,54 +1,37 @@
 
 import { FreshContext } from "$fresh/server.ts";
 import { Manga } from "../../../utils/manga.ts";
-
-import { MongoClient } from "npm:mongodb";
-const client = await (new MongoClient(Deno.env.get("MONGO_URI") ?? "")).connect();
-
-const db = client.db("asura");
-
-const dbManga = db.collection("manga");
+import { getMangaBySlug } from "../../../utils/fetcher.ts";
 
 export const handler = async (_req: Request, _ctx: FreshContext): Promise<Response> => {
 	const startTime = Date.now();
 	const slug = _ctx.params.slug;
 	const searchParams = new URL(_req.url).searchParams;
-	const includeChapters = searchParams.get("includeChapters") === "true" ? true : false;
+	const includeChapters = searchParams.get("includeChapters") === "true";
 
 	// check if slug is empty
 	if (!slug) return new Response("Manga not found", { status: 404 });
 
-	const query: any = [
-		{
-			$match: {
-				slug,
-			},
-		},
-	];
-
-	if (includeChapters)
-		query.push({
-			$lookup: {
-				from: "chapters",
-				localField: "_id",
-				foreignField: "mangaId",
-				as: "chapters",
-				pipeline: [
-					{
-						$sort: {
-							number: -1,
-						},
-					},
-				],
-			},
-		});
-	const result = dbManga.aggregate(query);
-
-	const manga = (await result.toArray() as Manga[])?.[0];
+	const manga = await getMangaBySlug(slug);
 
 	// check if manga is empty
-	if (!manga || !slug) {
+	if (!manga) {
 		return new Response("Manga not found", { status: 404 });
+	}
+
+	// If includeChapters is true, get chapters from KV
+	if (includeChapters) {
+		const kv = await Deno.openKv();
+		const chapters = [];
+		const iter = kv.list({ prefix: ["chapters", slug] });
+		
+		for await (const entry of iter) {
+			chapters.push(entry.value);
+		}
+		
+		// Sort chapters by number in descending order
+		chapters.sort((a: any, b: any) => b.number - a.number);
+		manga.chapters = chapters;
 	}
 
 	console.log(`Took ${Date.now() - startTime}ms to fetch ${manga.slug} with chapters`);

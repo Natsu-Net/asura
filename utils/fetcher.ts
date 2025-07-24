@@ -1,4 +1,5 @@
 import type { Manga } from "./manga.ts";
+
 interface Genre {
 	name: string;
 	url: string;
@@ -12,24 +13,36 @@ interface MangaData {
 	limit: number;
 }
 
+// Helper function to filter manga based on search and genres
+function filterManga(manga: Manga, search: string, genreSplit: string[]): boolean {
+	let matches = true;
+	
+	if (search && !manga.title.toLowerCase().includes(search.toLowerCase())) {
+		matches = false;
+	}
+	
+	if (genreSplit && genreSplit.length > 0 && genreSplit[0] !== "") {
+		const hasGenre = genreSplit.some(genre => 
+			manga.genres && manga.genres.includes(genre)
+		);
+		if (!hasGenre) {
+			matches = false;
+		}
+	}
+	
+	return matches;
+}
+
 export async function ServerFetcher(url: string) {
-
-	const MongoClient = (await import("npm:mongodb")).MongoClient;
-	const client = await (new MongoClient(Deno.env.get("MONGO_URI") ?? "")).connect();
-
-	const db = client.db("asura");
-
-
-	const dbManga = db.collection("manga");
-
-
+	const kv = await Deno.openKv();
+	
 	const searchParams = new URL(url).searchParams;
 
 	const page = parseInt(searchParams.get("page") ?? "1");
 	const search = searchParams.get("search") ?? "";
 	const genres = searchParams.get("genres") ?? "";
 
-	const genreSplit = genres?.split(",");
+	const genreSplit = genres?.split(",").filter(g => g.trim() !== "");
 
 	let limit = parseInt(searchParams.get("limit") ?? "10");
 
@@ -43,45 +56,69 @@ export async function ServerFetcher(url: string) {
 
 	const start = page - 1 < 0 ? 0 : page == 1 ? 0 : (page - 1) * limit;
 
-	// deno-lint-ignore no-explicit-any
-	const Query:any = {
-	}
+	// Get all manga from KV store
+	const allManga: Manga[] = [];
+	const iter = kv.list({ prefix: ["manga"] });
 	
-	if (search) {
-		if (!Query.$and) {
-			Query.$and = [];
+	for await (const entry of iter) {
+		const manga = entry.value as Manga;
+		if (filterManga(manga, search, genreSplit)) {
+			allManga.push(manga);
 		}
-		Query.$and.push({ title: { $regex: search, $options: "i" } });
-	}
-	if (genreSplit && genreSplit.length > 0 && genreSplit[0] != "") {
-		if (!Query.$and) {
-			Query.$and = [];
-		}
-		Query.$and.push({ genres: { $in: genreSplit } });
 	}
 
-	const count = await dbManga.countDocuments(Query);
+	// Sort by Updated_On date descending
+	allManga.sort((a, b) => {
+		const dateA = new Date(a.Updated_On || 0).getTime();
+		const dateB = new Date(b.Updated_On || 0).getTime();
+		return dateB - dateA;
+	});
 
-	const sdata = (await dbManga.find(Query).sort({
-    Updated_On: -1,
-  }).skip(start).limit(limit).toArray()) as unknown as Manga[];
-
-
+	const total = allManga.length;
+	const sdata = allManga.slice(start, start + limit);
 
 	const r = {
 		data: sdata.map((manga: Manga) => {
 			manga.chapters.map((chapter) => {
-				chapter.pages = Deno.env.get("APP_URL") + "/api/" + manga.slug + "/chapter/" + chapter.number;
+				chapter.pages = (Deno.env.get("APP_URL") || "") + "/api/" + manga.slug + "/chapter/" + chapter.number;
 				return chapter;
 			});
 			return manga;
 		}),
-		total: count,
+		total: total,
 		page: page,
-		pagesLeft: Math.ceil(count / limit) - page,
-		limit: limit ?? "10",
+		pagesLeft: Math.ceil(total / limit) - page,
+		limit: limit,
 	};
 
-
 	return r as MangaData;
+}
+
+// Helper function to store manga in KV
+export async function storeManga(manga: Manga) {
+	const kv = await Deno.openKv();
+	await kv.set(["manga", manga.slug], manga);
+}
+
+// Helper function to get manga by slug
+export async function getMangaBySlug(slug: string): Promise<Manga | null> {
+	const kv = await Deno.openKv();
+	const result = await kv.get(["manga", slug]);
+	return result.value as Manga | null;
+}
+
+// Helper function to get all manga slugs
+export async function getAllMangaSlugs(): Promise<string[]> {
+	const kv = await Deno.openKv();
+	const slugs: string[] = [];
+	const iter = kv.list({ prefix: ["manga"] });
+	
+	for await (const entry of iter) {
+		const key = entry.key as string[];
+		if (key.length === 2 && key[0] === "manga") {
+			slugs.push(key[1]);
+		}
+	}
+	
+	return slugs;
 }

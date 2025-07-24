@@ -8,4 +8,14 @@
 # Fresh build directory
 _fresh/
 .vscode/settings.json
-node_modules
+
+# Node.js dependencies (not used in this Deno project)
+node_modules/
+package.json
+package-lock.json
+
+# Old MongoDB version for backup
+build-database-old.ts
+
+# Temporary files
+/tmp/
