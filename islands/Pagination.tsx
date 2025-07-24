@@ -107,45 +107,53 @@ export default function Pagination({ PaginationData,currentPage,MangaListData }:
 
 	return (
 		<>
-			<nav>
-				<ul class="pagination justify-content-center">
+			<nav class="flex justify-center">
+				<div class="flex items-center space-x-1">
 					{pages.map((page) => {
 						if (page === -1) {
 							return (
-								<li class="page-item">
-									<a class="page-link" onClick={() => changePage(page)}>
-										<span aria-hidden="true">&laquo;</span>
-									</a>
-								</li>
+								<button 
+									type="button"
+									class="px-3 py-2 text-gray-400 hover:text-white hover:bg-white hover:bg-opacity-10 rounded-lg transition-all duration-200 cursor-pointer"
+									onClick={() => changePage(page)}
+								>
+									<span aria-hidden="true">‹ Previous</span>
+								</button>
 							);
 						} else if (page === -2) {
 							return (
-								<li class="page-item">
-									<a class="page-link" onClick={(e) => changePage(page)}>
-										<span aria-hidden="true">&raquo;</span>
-									</a>
-								</li>
+								<button 
+									type="button"
+									class="px-3 py-2 text-gray-400 hover:text-white hover:bg-white hover:bg-opacity-10 rounded-lg transition-all duration-200 cursor-pointer"
+									onClick={() => changePage(page)}
+								>
+									<span aria-hidden="true">Next ›</span>
+								</button>
 							);
 						} else if (page == currentPage.value) {
 							return (
-								<li class="page-item active">
-									<a class="page-link" onClick={() => changePage(page)}>
-										{page}
-									</a>
-								</li>
+								<button 
+									type="button"
+									class="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-semibold shadow-lg cursor-pointer"
+									onClick={() => changePage(page)}
+								>
+									{page}
+								</button>
 							);
 						} else {
 							return (
-								<li class="page-item">
-									<a class="page-link" onClick={() => changePage(page)}>
-										{page}
-									</a>
-								</li>
+								<button 
+									type="button"
+									class="px-4 py-2 text-gray-400 hover:text-white hover:bg-white hover:bg-opacity-10 rounded-lg transition-all duration-200 cursor-pointer"
+									onClick={() => changePage(page)}
+								>
+									{page}
+								</button>
 							);
 						}
 
 					})}
-				</ul>
+				</div>
 			</nav>
 		</>
 	);

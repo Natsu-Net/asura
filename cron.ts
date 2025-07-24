@@ -35,4 +35,4 @@ Deno.cron("Weekly database cleanup", "0 2 * * SUN", async () => {
 	}
 });
 
-console.log("Cron jobs registered: database update every 6 hours, cleanup every Sunday at 2am UTC");
+console.log("Cron jobs registered: database update every 30 minutes, cleanup every Sunday at 2am UTC");
