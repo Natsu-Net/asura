@@ -2,7 +2,7 @@
 import { HandlerContext } from "$fresh/server.ts";
 
 export const handler = async (_req: Request, _ctx: HandlerContext): Promise<Response> => {
-	const kv = await Deno.openKv();
+	const kv = await Deno.openKv("https://api.deno.com/databases/82c53b38-af0e-4fa6-9009-ec428bfab4a3/connect");
 	
 	// Get domain from KV store
 	const domainConfig = await kv.get(["config", "domain"]);

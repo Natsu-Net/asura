@@ -3,7 +3,8 @@
   "description": "Manga API with automatic database updates via cron jobs",
   "entrypoint": "main.ts",
   "env": {
-    "DENO_ENV": "production"
+    "DENO_ENV": "production",
+    "APP_URL": "https://your-deploy-url.deno.dev"
   },
   "unstable": [
     "kv",
@@ -12,7 +13,7 @@
   "cron": [
     {
       "name": "Update manga database",
-      "schedule": "0 */ * * *",
+      "schedule": "0 */6 * * *",
       "timezone": "UTC"
     },
     {

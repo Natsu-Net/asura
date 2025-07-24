@@ -1,13 +1,14 @@
 {
   "lock": false,
   "tasks": {
-    "start": "deno run -A --watch=static/,routes/ --unstable-kv --unstable-cron dev.ts",
+    "start": "deno run -A --watch=static/,routes/ --unstable-kv --unstable-cron --env=.env dev.ts",
     "update": "deno run -A -r https://fresh.deno.dev/update .",
     "build": "deno run -A --unstable-kv --unstable-cron main.ts",
     "preview": "deno run -A --unstable-kv --unstable-cron main.ts",
-    "build-database": "deno run -A --unstable-kv build-database.ts",
-    "test-kv": "deno run -A --unstable-kv test-kv.ts",
-    "test-basic": "deno run -A test-basic.ts"
+    "build-database": "deno run -A --unstable-kv --env=.env build-database.ts",
+    "test-kv": "deno run -A --unstable-kv --env=.env test-kv.ts",
+    "test-basic": "deno run -A --env=.env test-basic.ts",
+    "check-env": "deno run -A --unstable-kv --env=.env check-env.ts"
   },
   "imports": {
     "$fresh/": "https://deno.land/x/fresh@1.7.3/",

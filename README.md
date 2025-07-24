@@ -25,6 +25,10 @@ This application is optimized for Deno Deploy with built-in cron support:
 
 ### Local Development
 ```bash
+# Copy environment file and configure as needed
+cp .env.example .env
+
+# Start development server
 deno task start
 ```
 
@@ -57,9 +61,25 @@ The API automatically updates its database every 6 hours using Deno Deploy's cro
 
 ## Environment Variables
 
-- `APP_URL` - Base URL for the application (optional)
-- `DENO_DEPLOYMENT_ID` - Set this for production deployment detection
-- `CRON_SECRET` - Secret for cron job authentication (optional)
+Set these in your Deno Deploy dashboard or local `.env` file:
+
+- `DENO_KV_ACCESS_TOKEN` - **Required for production**: KV database access token from Deno Deploy
+- `APP_URL` - Base URL for the application (e.g., `https://your-app.deno.dev`)
+- `CRON_SECRET` - Optional secret for cron job authentication 
+- `DENO_ENV` - Environment type (`development` or `production`)
+- `DENO_DEPLOYMENT_ID` - Automatically set by Deno Deploy
+
+### For Local Development
+Copy `.env.example` to `.env` and update the values:
+```bash
+cp .env.example .env
+```
+
+### For Production (Deno Deploy)
+Set environment variables in the Deno Deploy dashboard:
+1. Go to your project settings
+2. Add environment variables in the "Environment Variables" section
+3. `DENO_KV_ACCESS_TOKEN` is the most important for KV database access
 
 ## Tech Stack
 
