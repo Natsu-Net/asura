@@ -105,8 +105,25 @@ async function main() {
 	for await (const manga of parser.getMangaList()) {
 		console.log("Processing:", manga.title);
 		
-		// Check if manga already exists
-		const existingManga = await getMangaBySlug(manga.slug);
+		// Enhanced manga detection - check multiple slug variations
+		let existingManga = await getMangaBySlug(manga.slug);
+		
+		// If not found by current slug, try to find by originalSlug or title similarity
+		if (!existingManga && manga.originalSlug) {
+			existingManga = await getMangaBySlug(manga.originalSlug);
+			if (existingManga) {
+				console.log(`Found existing manga by originalSlug: ${manga.originalSlug}`);
+			}
+		}
+		
+		// If still not found, try to find by title similarity (fallback)
+		if (!existingManga) {
+			// Create a local findMangaByTitle function since we can't import it
+			existingManga = await findMangaByTitleLocal(manga.title);
+			if (existingManga) {
+				console.log(`Found similar manga by title: "${existingManga.title}"`);
+			}
+		}
 		
 		if (existingManga) {
 			// Update existing manga with new information
@@ -117,6 +134,8 @@ async function main() {
 				Followers: manga.Followers > 0 ? manga.Followers : existingManga.Followers,
 				Rating: manga.Rating > 0 ? manga.Rating : existingManga.Rating,
 				Updated_On: new Date(),
+				// Keep the existing slug to avoid breaking URLs, but update originalSlug if needed
+				originalSlug: manga.originalSlug || existingManga.originalSlug,
 			};
 
 			// Parse new chapters if available
@@ -359,12 +378,142 @@ async function migrateToNewStructure() {
 	console.log("Migration complete");
 }
 
+// Local helper function to find manga by title similarity
+async function findMangaByTitleLocal(title: string): Promise<Manga | null> {
+	const kv = await openKv();
+	
+	try {
+		// Get all manga from the index
+		const mangaIndexResult = await kv.get(["manga_index"]);
+		const mangaSlugs = (mangaIndexResult.value as string[]) || [];
+		
+		// Normalize the search title
+		const normalizedSearchTitle = title.toLowerCase().replace(/[^a-z0-9]/g, '');
+		
+		// Check each manga for title similarity
+		for (const slug of mangaSlugs) {
+			const manga = await getMangaBySlug(slug);
+			if (manga) {
+				const normalizedMangaTitle = manga.title.toLowerCase().replace(/[^a-z0-9]/g, '');
+				
+				// Check for exact match or high similarity
+				if (normalizedMangaTitle === normalizedSearchTitle || 
+					normalizedMangaTitle.includes(normalizedSearchTitle) || 
+					normalizedSearchTitle.includes(normalizedMangaTitle)) {
+					
+					// Additional check: if titles are very similar (within 3 character difference)
+					const titleDiff = Math.abs(normalizedMangaTitle.length - normalizedSearchTitle.length);
+					if (titleDiff <= 3) {
+						console.log(`Found similar manga: "${manga.title}" matches "${title}"`);
+						return manga;
+					}
+				}
+			}
+		}
+		
+		return null;
+	} catch (error) {
+		console.error("Error finding manga by title:", error);
+		return null;
+	} finally {
+		kv.close();
+	}
+}
+
+// Helper function to check for and clean up duplicate manga entries
+async function checkForDuplicates() {
+	console.log("🔍 Checking for duplicate manga entries...");
+	const kv = await openKv();
+	
+	try {
+		const mangaIndexResult = await kv.get(["manga_index"]);
+		const mangaSlugs = (mangaIndexResult.value as string[]) || [];
+		
+		const titleMap = new Map<string, string[]>();
+		const duplicates: Array<{title: string, slugs: string[]}> = [];
+		
+		// Group manga by title
+		for (const slug of mangaSlugs) {
+			const manga = await getMangaBySlug(slug);
+			if (manga && manga.title) {
+				const title = manga.title.trim();
+				if (!titleMap.has(title)) {
+					titleMap.set(title, []);
+				}
+				titleMap.get(title)!.push(slug);
+			}
+		}
+		
+		// Find duplicates
+		for (const [title, slugs] of titleMap.entries()) {
+			if (slugs.length > 1) {
+				duplicates.push({ title, slugs });
+				console.log(`⚠️  Duplicate found: "${title}" has ${slugs.length} entries: ${slugs.join(', ')}`);
+			}
+		}
+		
+		if (duplicates.length === 0) {
+			console.log("✅ No duplicate manga entries found");
+		} else {
+			console.log(`⚠️  Found ${duplicates.length} manga with duplicate entries`);
+			
+			// Clean up duplicates by keeping the one with the most chapters
+			for (const duplicate of duplicates) {
+				let bestSlug = duplicate.slugs[0];
+				let maxChapters = 0;
+				
+				for (const slug of duplicate.slugs) {
+					const manga = await getMangaBySlug(slug);
+					if (manga && manga.chapters && manga.chapters.length > maxChapters) {
+						maxChapters = manga.chapters.length;
+						bestSlug = slug;
+					}
+				}
+				
+				console.log(`  Keeping "${duplicate.title}" with slug "${bestSlug}" (${maxChapters} chapters)`);
+				
+				// Remove duplicate entries
+				for (const slug of duplicate.slugs) {
+					if (slug !== bestSlug) {
+						console.log(`    Removing duplicate slug: ${slug}`);
+						
+						// Delete manga details and chapters
+						await kv.delete(["manga_details", slug]);
+						await kv.delete(["manga_chapters", slug]);
+						
+						// Delete chapter content
+						const chaptersResult = await kv.get(["manga_chapters", slug]);
+						if (chaptersResult.value) {
+							const chapters = chaptersResult.value as Chapter[];
+							for (const chapter of chapters) {
+								await kv.delete(["chapter_content", slug, String(chapter.number)]);
+							}
+						}
+						
+						// Remove from index
+						const indexResult = await kv.get(["manga_index"]);
+						const index = (indexResult.value as string[]) || [];
+						const updatedIndex = index.filter(s => s !== slug);
+						await kv.set(["manga_index"], updatedIndex);
+					}
+				}
+			}
+		}
+		
+	} catch (error) {
+		console.error("❌ Error checking for duplicates:", error);
+	} finally {
+		kv.close();
+	}
+}
+
 // Only run main logic when file is executed directly (not imported)
 if (import.meta.main) {
 	await checkForNewDomains();
 	await migrateToNewStructure(); // Migrate old data first
 	await main();
 	await cleanDatabase();
+	await checkForDuplicates(); // Check for duplicates after cleaning
 }
 
 export {

@@ -178,6 +178,55 @@ export async function storeManga(manga: Manga) {
 	const kv = await openKv();
 	
 	try {
+		// Check if this manga already exists with a different slug
+		let existingSlug: string | null = null;
+		if (manga.originalSlug) {
+			// Try to find existing manga by originalSlug first
+			const existingByOriginal = await getMangaBySlugInternal(kv, manga.originalSlug);
+			if (existingByOriginal) {
+				existingSlug = manga.originalSlug;
+			}
+		}
+		
+		// If not found by originalSlug, check if we're updating an existing manga
+		if (!existingSlug) {
+			// Check if we're updating an existing manga (same title, different slug)
+			const existingIndex = await kv.get(["manga_index"]);
+			const mangaIndex = (existingIndex.value as string[]) || [];
+			
+			for (const slug of mangaIndex) {
+				const existingManga = await getMangaBySlugInternal(kv, slug);
+				if (existingManga && existingManga.title === manga.title) {
+					existingSlug = slug;
+					break;
+				}
+			}
+		}
+		
+		// If we found an existing manga, update it instead of creating a new one
+		if (existingSlug && existingSlug !== manga.slug) {
+			console.log(`Updating existing manga "${manga.title}" from slug "${existingSlug}" to "${manga.slug}"`);
+			
+			// Delete old entries
+			await kv.delete(["manga_details", existingSlug]);
+			await kv.delete(["manga_chapters", existingSlug]);
+			
+			// Delete old chapter content
+			const oldChaptersResult = await kv.get(["manga_chapters", existingSlug]);
+			if (oldChaptersResult.value) {
+				const oldChapters = oldChaptersResult.value as ChapterReference[];
+				for (const chapter of oldChapters) {
+					await kv.delete(["chapter_content", existingSlug, chapter.number]);
+				}
+			}
+			
+			// Remove old slug from index
+			const oldIndex = await kv.get(["manga_index"]);
+			const oldMangaIndex = (oldIndex.value as string[]) || [];
+			const updatedIndex = oldMangaIndex.filter(slug => slug !== existingSlug);
+			await kv.set(["manga_index"], updatedIndex);
+		}
+		
 		// 1. Store manga details (without chapters)
 		const mangaDetails: MangaDetails = {
 			slug: manga.slug,
