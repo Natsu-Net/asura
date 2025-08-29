@@ -3,21 +3,6 @@ import { FreshContext } from "$fresh/server.ts";
 export const handler = async (_req: Request, _ctx: FreshContext): Promise<Response> => {
   const url = new URL(_req.url);
   
-  // Serve the OpenAPI JSON specification
-  if (url.pathname === "/api/docs" || url.pathname === "/api/docs/") {
-    try {
-      const openApiSpec = await Deno.readTextFile("./static/openapi.json");
-      return new Response(openApiSpec, {
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-        },
-      });
-    } catch (_error) {
-      return new Response("OpenAPI specification not found", { status: 404 });
-    }
-  }
-  
   // Serve Swagger UI HTML
   const swaggerUIHtml = `
 <!DOCTYPE html>
@@ -52,7 +37,7 @@ export const handler = async (_req: Request, _ctx: FreshContext): Promise<Respon
     <script>
         window.onload = function() {
             const ui = SwaggerUIBundle({
-                url: '${url.protocol}//${url.host}/api/docs',
+                url: '${url.protocol}//${url.host}/api/docs/openapi.json',
                 dom_id: '#swagger-ui',
                 deepLinking: true,
                 presets: [

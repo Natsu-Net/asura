@@ -18,6 +18,7 @@ export async function openKv(): Promise<Deno.Kv> {
   const isDeployment = !!Deno.env.get("DENO_DEPLOYMENT_ID");
   const force = Deno.env.get("DENO_ENV_FORCE") === "production";
 
+
   // If forced to use production, always use remote KV
   if (force) {
 	if (hasToken) {
@@ -43,7 +44,7 @@ export async function openKv(): Promise<Deno.Kv> {
   
   
   // In production with deployment ID and token, use remote KV
-  if (isDeployment && hasToken) {
+  if (hasToken) {
     try {
       console.log("🌐 Using remote KV database (production mode)");
       return await Deno.openKv(REMOTE_KV_URL);
