@@ -19,6 +19,9 @@ export default class AsuraParser {
 		// Remove hash suffixes (e.g., "title-abc123def" -> "title")
 		slug = slug.replace(/-[a-f0-9]{8,}$/i, "");
 		
+		// Remove trailing patterns like "-23723" (last dash followed by numbers)
+		slug = slug.replace(/-[0-9]+$/, "");
+		
 		// Clean up trailing dashes
 		slug = slug.replace(/-+$/, "");
 
@@ -93,6 +96,9 @@ export default class AsuraParser {
 					if (!slug || slug.length < 3) {
 						slug = this.getSlugFromUrl(url);
 					}
+					
+					// Ensure slug is normalized (remove trailing patterns like "-23723")
+					slug = slug.replace(/-[0-9]+$/, "");
 
 					// check if the manga is already in the list
 					const mangaData = mangaLists.find(
